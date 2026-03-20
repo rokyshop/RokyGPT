@@ -6,7 +6,7 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-const API_KEY = "TA_CLE_MISTRAL";
+const API_KEY = process.env.MISTRAL_API_KEY;
 
 let conversations = {}; // mémoire par utilisateur simple
 
