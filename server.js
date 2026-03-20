@@ -6,10 +6,13 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
+// 🔑 Utilise ta clé Mistral dans Render (variables d'environnement)
 const API_KEY = process.env.MISTRAL_API_KEY;
 
-let conversations = {}; // mémoire par utilisateur simple
+// mémoire par utilisateur
+let conversations = {};
 
+// Endpoint pour chat
 app.post("/chat", async (req, res) => {
   const { message, userId } = req.body;
 
@@ -17,7 +20,7 @@ app.post("/chat", async (req, res) => {
     conversations[userId] = [
       {
         role: "system",
-        content: "Tu es un expert en développement (Node.js, Roblox Lua). Tu réponds clairement et efficacement."
+        content: "Tu es un assistant expert en développement Node.js et Roblox Lua. Réponds clairement et efficacement."
       }
     ];
   }
@@ -44,8 +47,11 @@ app.post("/chat", async (req, res) => {
 
     res.json({ reply });
   } catch (err) {
-    res.status(500).json({ error: "Erreur API" });
+    console.error(err);
+    res.status(500).json({ error: "Erreur API Mistral" });
   }
 });
 
-app.listen(3000, () => console.log("Serveur lancé sur 3000"));
+// Render définit PORT automatiquement
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Serveur lancé sur ${PORT}`));
