@@ -1,23 +1,32 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
-  <title>ChatGPT Maison</title>
-  <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
-  <style>
-    body { background:#0f0f0f; color:white; font-family:sans-serif; }
-    #chat { max-width:800px; margin:auto; padding:20px; height:80vh; overflow-y:auto; border:1px solid #333; border-radius:10px;}
-    .msg { margin:10px 0; padding:10px; border-radius:10px; word-wrap: break-word; }
-    .user { background:#1e1e1e; text-align:right; }
-    .bot { background:#2a2a2a; }
-    textarea { width:100%; padding:10px; margin-top:10px; border-radius:5px; }
-    button { padding:10px; margin-top:5px; border-radius:5px; cursor:pointer; }
-  </style>
+<meta charset="UTF-8">
+<title>RokyGPT Pro</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs/themes/prism-tomorrow.css">
+<script src="https://cdn.jsdelivr.net/npm/prismjs/prism.js"></script>
+<style>
+  body { background: #0f111a; color: #fff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin:0; padding:0; display:flex; flex-direction:column; height:100vh;}
+  #chat { flex:1; overflow-y:auto; padding:20px; max-width:900px; margin:auto; display:flex; flex-direction:column; gap:10px;}
+  .msg { padding:12px 16px; border-radius:12px; word-wrap:break-word; max-width:70%; line-height:1.4; font-size:15px; white-space:pre-wrap; }
+  .user { background:#1e1e2a; align-self:flex-end; text-align:right;}
+  .bot { background:#2a2a3a; align-self:flex-start; text-align:left;}
+  textarea { width:calc(100% - 24px); margin:10px auto; padding:12px; border-radius:8px; border:none; resize:none; font-size:15px; background:#1c1c29; color:white;}
+  button { width:calc(100% - 24px); margin:0 auto 10px auto; padding:12px; border-radius:8px; border:none; background:#4f46e5; color:white; font-weight:bold; cursor:pointer; font-size:15px;}
+  pre { background:#1c1c29; padding:10px; border-radius:8px; overflow-x:auto;}
+  code { font-family:'Courier New', Courier, monospace; background:#1c1c29; padding:2px 4px; border-radius:4px;}
+  .mermaid { background:#1c1c29; padding:10px; border-radius:8px; overflow-x:auto;}
+  .file-msg { margin-top:5px; font-size:14px; color:#bbb;}
+  .msg img { max-width:100%; border-radius:8px; margin-top:5px;}
+</style>
 </head>
 <body>
 
 <div id="chat"></div>
-
-<textarea id="input" placeholder="Tape ton message ici..."></textarea>
+<textarea id="input" rows="2" placeholder="Tape ton message ici..."></textarea>
+<input type="file" id="files" multiple style="margin:auto;">
 <button onclick="send()">Envoyer</button>
 
 <script>
@@ -26,44 +35,61 @@ const userId = "user-" + Math.random();
 
 async function send() {
   const input = document.getElementById("input");
-  const msg = input.value;
-  if (!msg) return;
+  const filesInput = document.getElementById("files");
+  const msg = input.value.trim();
+  if (!msg && filesInput.files.length === 0) return;
 
-  addMessage(msg, "user");
+  addMessage(msg, "user", filesInput.files);
+  input.value = "";
+
+  const formData = new FormData();
+  formData.append("message", msg);
+  formData.append("userId", userId);
+  for (const f of filesInput.files) formData.append("files", f);
 
   try {
     const res = await fetch("/chat", {
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body: JSON.stringify({ message: msg, userId })
+      method: "POST",
+      body: formData
     });
-
     const data = await res.json();
     addMessage(data.reply, "bot");
-  } catch(err) {
+  } catch (err) {
     addMessage("Erreur serveur", "bot");
     console.error(err);
   }
 
-  input.value = "";
-  document.getElementById("chat").scrollTop = document.getElementById("chat").scrollHeight;
+  filesInput.value = "";
 }
 
-function addMessage(text, type) {
+function addMessage(text, type, files=[]) {
   const chat = document.getElementById("chat");
   const div = document.createElement("div");
   div.className = "msg " + type;
 
-  // gestion code blocks & Mermaid
+  // Gestion Mermaid
   if (text.includes("```mermaid")) {
     const code = text.split("```mermaid")[1].split("```")[0];
     div.innerHTML = `<div class="mermaid">${code}</div>`;
     setTimeout(() => mermaid.init(), 100);
   } else {
-    div.innerText = text;
+    // Markdown + code highlight
+    div.innerHTML = marked.parse(text);
+    div.querySelectorAll("pre code").forEach((el) => {
+      Prism.highlightElement(el);
+    });
+  }
+
+  // Affichage fichiers envoyés
+  if (files.length > 0) {
+    const fileDiv = document.createElement("div");
+    fileDiv.className = "file-msg";
+    fileDiv.innerHTML = Array.from(files).map(f => `📎 ${f.name}`).join("<br>");
+    div.appendChild(fileDiv);
   }
 
   chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
 }
 </script>
 </body>
