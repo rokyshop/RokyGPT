@@ -12,15 +12,16 @@
 
   <style>
     :root {
-      --bg: #0d0f17;
-      --sidebar-bg: #11151f;
-      --chat-bg: #0f111a;
-      --msg-user: #1e293b;
-      --msg-bot: #1e293b;
-      --accent: #6366f1;       /* indigo-violet comme ChatGPT/Grok */
-      --text: #e2e8f0;
-      --text-light: #94a3b8;
-      --border: #1e293b;
+      --bg: #0a0a0f;
+      --sidebar-bg: #101015;
+      --chat-bg: #0c0c12;
+      --msg-user: #1a2b44;     /* gris-bleu très discret */
+      --msg-bot: #17171f;
+      --accent: #5a7cff;       /* bleu-gris subtil – pas trop flashy */
+      --text: #d4d4e0;
+      --text-light: #8a8aa3;
+      --border: #1f1f2a;
+      --hover: #1e1e2e;
     }
 
     * { margin:0; padding:0; box-sizing:border-box; }
@@ -33,7 +34,6 @@
       overflow: hidden;
     }
 
-    /* ──────────────── SIDEBAR ──────────────── */
     #sidebar {
       width: 260px;
       background: var(--sidebar-bg);
@@ -48,25 +48,21 @@
       padding: 16px;
       border-bottom: 1px solid var(--border);
       font-weight: 600;
-      font-size: 1.1rem;
-      color: var(--accent);
-      display: flex;
-      align-items: center;
-      gap: 12px;
+      font-size: 1.2rem;
+      color: var(--text);
     }
 
     #new-chat {
-      margin: 16px;
+      margin: 16px 16px 8px;
       padding: 10px;
       background: var(--accent);
       color: white;
       border: none;
-      border-radius: 8px;
+      border-radius: 10px;
       cursor: pointer;
       font-weight: 500;
-      transition: background 0.2s;
     }
-    #new-chat:hover { background: #4f46e5; }
+    #new-chat:hover { opacity: 0.9; }
 
     #conversations {
       flex: 1;
@@ -78,17 +74,27 @@
       padding: 12px 16px;
       cursor: pointer;
       color: var(--text-light);
-      border-radius: 6px;
+      border-radius: 8px;
       margin: 4px 12px;
-      transition: all 0.2s;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: all 0.15s;
     }
-    .conv-item:hover,
+    .conv-item:hover { background: var(--hover); color: var(--text); }
     .conv-item.active {
-      background: rgba(99,102,241,0.12);
+      background: rgba(90,124,255,0.15);
       color: white;
+      font-weight: 500;
     }
+    .conv-item .delete-btn {
+      opacity: 0;
+      color: #ff6b6b;
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+    .conv-item:hover .delete-btn { opacity: 0.7; }
 
-    /* ──────────────── MAIN CHAT ──────────────── */
     #main {
       flex: 1;
       display: flex;
@@ -100,11 +106,8 @@
       padding: 12px 20px;
       border-bottom: 1px solid var(--border);
       font-weight: 500;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      background: rgba(15,17,26,0.6);
-      backdrop-filter: blur(8px);
+      background: rgba(12,12,18,0.7);
+      backdrop-filter: blur(10px);
     }
 
     #chat {
@@ -114,30 +117,29 @@
       display: flex;
       flex-direction: column;
       gap: 20px;
-      max-width: 860px;
+      max-width: 900px;
       margin: 0 auto;
       width: 100%;
     }
 
     .msg {
-      max-width: 80%;
-      padding: 12px 16px;
-      border-radius: 12px;
-      line-height: 1.5;
-      font-size: 15px;
+      max-width: 82%;
+      padding: 13px 18px;
+      border-radius: 14px;
+      line-height: 1.55;
+      font-size: 15.2px;
       white-space: pre-wrap;
       word-break: break-word;
     }
-    .user  { align-self: flex-end; background: var(--accent); color: white; }
+    .user  { align-self: flex-end; background: var(--msg-user); color: #e0e7ff; }
     .bot   { align-self: flex-start; background: var(--msg-bot); border: 1px solid var(--border); }
 
-    .msg img { max-width: 100%; border-radius: 10px; margin-top: 8px; }
-    pre { background:#1e293b; padding:14px; border-radius:10px; overflow-x:auto; margin:10px 0; }
+    .msg img { max-width: 100%; border-radius: 12px; margin-top: 10px; }
+    pre { background:#14141e; padding:16px; border-radius:12px; overflow-x:auto; margin:12px 0; }
     code { font-family: 'Consolas', monospace; }
 
-    .mermaid { background:#1e293b; padding:16px; border-radius:10px; }
+    .mermaid { background:#14141e; padding:18px; border-radius:12px; }
 
-    /* ──────────────── INPUT AREA ──────────────── */
     #input-area {
       padding: 16px 24px;
       border-top: 1px solid var(--border);
@@ -147,22 +149,23 @@
     #input-wrapper {
       display: flex;
       align-items: center;
-      gap: 12px;
-      background: #1e293b;
-      border-radius: 12px;
-      padding: 8px 16px;
+      gap: 14px;
+      background: #14141e;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 10px 18px;
     }
 
     #input {
       flex: 1;
       background: transparent;
       border: none;
-      color: white;
+      color: var(--text);
       font-size: 16px;
       resize: none;
       min-height: 24px;
-      max-height: 160px;
-      line-height: 1.4;
+      max-height: 180px;
+      line-height: 1.45;
       outline: none;
     }
 
@@ -170,8 +173,7 @@
     #attach-btn {
       cursor: pointer;
       color: var(--text-light);
-      font-size: 1.3rem;
-      padding: 8px;
+      font-size: 1.4rem;
     }
 
     #send-btn {
@@ -179,62 +181,57 @@
       color: white;
       border: none;
       border-radius: 50%;
-      width: 40px;
-      height: 40px;
+      width: 42px;
+      height: 42px;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      transition: background 0.2s;
+      font-size: 1.1rem;
     }
-    #send-btn:hover { background: #4f46e5; }
+    #send-btn:hover { background: #4a68e0; }
 
-    /* Mobile – sidebar cachée */
+    .thinking {
+      align-self: flex-start;
+      color: var(--text-light);
+      font-style: italic;
+      padding: 12px 18px;
+    }
+
     @media (max-width: 768px) {
       #sidebar {
         position: fixed;
-        left: 0;
-        top: 0;
-        bottom: 0;
+        left: 0; top: 0; bottom: 0;
         transform: translateX(-100%);
+        width: 80%;
       }
       #sidebar.open { transform: translateX(0); }
-
-      #chat-header { padding-left: 60px; }
+      #chat-header { padding-left: 60px; position: relative; }
       #menu-toggle {
         display: block;
         position: absolute;
-        left: 16px;
-        font-size: 1.4rem;
+        left: 16px; top: 50%;
+        transform: translateY(-50%);
+        font-size: 1.5rem;
         cursor: pointer;
         color: var(--text-light);
       }
     }
-
     #menu-toggle { display: none; }
   </style>
 </head>
 <body>
 
-  <!-- Sidebar -->
   <aside id="sidebar">
-    <div id="sidebar-header">
-      <span>RokyGPT</span>
-    </div>
+    <div id="sidebar-header">RokyGPT</div>
     <button id="new-chat">+ Nouveau chat</button>
-    <div id="conversations">
-      <!-- Les conversations seront ajoutées ici dynamiquement plus tard -->
-      <div class="conv-item active">Conversation actuelle</div>
-      <div class="conv-item">Projet React Router</div>
-      <div class="conv-item">Idées logo 2026</div>
-    </div>
+    <div id="conversations"></div>
   </aside>
 
-  <!-- Main area -->
   <main id="main">
     <div id="chat-header">
       <div id="menu-toggle">☰</div>
-      <span>Chat avec RokyGPT</span>
+      <span id="current-title">RokyGPT – Nouvelle conversation</span>
     </div>
 
     <div id="chat"></div>
@@ -243,10 +240,8 @@
       <div id="input-wrapper">
         <label for="files" id="attach-btn">📎</label>
         <input type="file" id="files" multiple />
-
-        <textarea id="input" rows="1" placeholder="Envoyer un message à RokyGPT..."></textarea>
-
-        <button id="send-btn">➤</button>
+        <textarea id="input" rows="1" placeholder="Message à RokyGPT..."></textarea>
+        <button id="send-btn">→</button>
       </div>
     </div>
   </main>
@@ -254,27 +249,128 @@
   <script>
     mermaid.initialize({ startOnLoad: true, theme: 'dark' });
 
-    const userId = "user-" + Math.random().toString(36).slice(2);
+    // ─── Gestion multi-conversations ───
+    let currentConvId = localStorage.getItem('currentConvId') || Date.now().toString();
+    let conversations = JSON.parse(localStorage.getItem('rokyConversations') || '{}');
+
+    if (!conversations[currentConvId]) {
+      conversations[currentConvId] = {
+        id: currentConvId,
+        title: "Nouvelle conversation",
+        messages: []
+      };
+    }
+
+    function saveConversations() {
+      localStorage.setItem('rokyConversations', JSON.stringify(conversations));
+      localStorage.setItem('currentConvId', currentConvId);
+    }
+
+    function renderConversations() {
+      const container = document.getElementById("conversations");
+      container.innerHTML = "";
+
+      Object.values(conversations).forEach(conv => {
+        const item = document.createElement("div");
+        item.className = `conv-item ${conv.id === currentConvId ? 'active' : ''}`;
+        item.innerHTML = `
+          <span>${conv.title}</span>
+          <span class="delete-btn" onclick="deleteConv('${conv.id}'); event.stopPropagation();">✕</span>
+        `;
+        item.onclick = () => loadConversation(conv.id);
+        container.appendChild(item);
+      });
+    }
+
+    function loadConversation(id) {
+      currentConvId = id;
+      saveConversations();
+      renderConversations();
+
+      const conv = conversations[id];
+      document.getElementById("current-title").textContent = conv.title;
+
+      const chat = document.getElementById("chat");
+      chat.innerHTML = "";
+
+      conv.messages.forEach(msg => {
+        addMessage(msg.content, msg.role === "user" ? "user" : "bot", msg.files || []);
+      });
+
+      if (conv.messages.length === 0) {
+        addMessage("Salut ! Je suis RokyGPT. En quoi puis-je t'aider aujourd'hui ?", "bot");
+      }
+    }
+
+    function createNewConversation() {
+      const id = Date.now().toString();
+      conversations[id] = {
+        id,
+        title: "Nouvelle conversation",
+        messages: []
+      };
+      currentConvId = id;
+      saveConversations();
+      renderConversations();
+      loadConversation(id);
+    }
+
+    function deleteConv(id) {
+      if (Object.keys(conversations).length <= 1) {
+        alert("Tu ne peux pas supprimer la dernière conversation !");
+        return;
+      }
+      if (confirm("Supprimer cette conversation ?")) {
+        delete conversations[id];
+        if (currentConvId === id) {
+          const ids = Object.keys(conversations);
+          currentConvId = ids[ids.length - 1];
+        }
+        saveConversations();
+        renderConversations();
+        loadConversation(currentConvId);
+      }
+    }
+
+    function updateTitleIfNeeded(text) {
+      const conv = conversations[currentConvId];
+      if (conv.title === "Nouvelle conversation" && text.trim()) {
+        const firstWords = text.trim().split(/\s+/).slice(0, 5).join(" ").replace(/[^\w\s]/gi, '');
+        conv.title = firstWords || "Conversation sans titre";
+        saveConversations();
+        renderConversations();
+        document.getElementById("current-title").textContent = conv.title;
+      }
+    }
+
+    // ─── Chat logic ───
     const chat = document.getElementById("chat");
     const input = document.getElementById("input");
     const filesInput = document.getElementById("files");
 
-    // Ajuste automatiquement la hauteur du textarea
     input.addEventListener("input", () => {
       input.style.height = "auto";
-      input.style.height = Math.min(input.scrollHeight, 160) + "px";
+      input.style.height = Math.min(input.scrollHeight, 180) + "px";
     });
 
     async function send() {
       const msg = input.value.trim();
       if (!msg && filesInput.files.length === 0) return;
 
-      addMessage(msg, "user", Array.from(filesInput.files));
+      const files = Array.from(filesInput.files);
+      addMessage(msg, "user", files);
+      updateTitleIfNeeded(msg);
+
+      const thinking = document.createElement("div");
+      thinking.className = "thinking";
+      thinking.textContent = "RokyGPT réfléchit...";
+      chat.appendChild(thinking);
+      chat.scrollTop = chat.scrollHeight;
 
       const formData = new FormData();
       formData.append("message", msg);
-      formData.append("userId", userId);
-      for (const f of filesInput.files) formData.append("files", f);
+      formData.append("userId", currentConvId);
+      files.forEach(f => formData.append("files", f));
 
       input.value = "";
       input.style.height = "24px";
@@ -282,12 +378,15 @@
 
       try {
         const res = await fetch("/chat", { method: "POST", body: formData });
-        if (!res.ok) throw new Error("HTTP " + res.status);
+        if (!res.ok) throw new Error("Erreur HTTP");
         const data = await res.json();
+
+        chat.removeChild(thinking);
         addMessage(data.reply || "Pas de réponse...", "bot");
       } catch (err) {
         console.error(err);
-        addMessage("Erreur – le serveur ne répond pas", "bot");
+        chat.removeChild(thinking);
+        addMessage("Erreur – réessaie dans quelques secondes", "bot");
       }
     }
 
@@ -306,26 +405,30 @@
 
       div.innerHTML = rendered;
 
-      // Highlight code
-      div.querySelectorAll("pre code").forEach(el => {
-        Prism.highlightElement(el);
-      });
+      div.querySelectorAll("pre code").forEach(el => Prism.highlightElement(el));
 
-      // Fichiers joints
       if (files.length > 0 && type === "user") {
         const fileDiv = document.createElement("div");
-        fileDiv.style.marginTop = "8px";
-        fileDiv.style.fontSize = "0.9rem";
-        fileDiv.style.color = "#94a3b8";
-        fileDiv.innerHTML = files.map(f => `📎 ${f.name}`).join(" · ");
+        fileDiv.style.marginTop = "10px";
+        fileDiv.style.fontSize = "0.92rem";
+        fileDiv.style.color = var(--text-light);
+        fileDiv.innerHTML = files.map(f => `📎 ${f.name}`).join(" • ");
         div.appendChild(fileDiv);
       }
 
       chat.appendChild(div);
       chat.scrollTop = chat.scrollHeight;
+
+      // Sauvegarde dans localStorage
+      conversations[currentConvId].messages.push({
+        role: type === "user" ? "user" : "assistant",
+        content: text,
+        files: files.map(f => ({ name: f.name })) // on garde juste les noms
+      });
+      saveConversations();
     }
 
-    // Événements envoi
+    // Events
     document.getElementById("send-btn").onclick = send;
     input.addEventListener("keydown", e => {
       if (e.key === "Enter" && !e.shiftKey) {
@@ -334,13 +437,15 @@
       }
     });
 
-    // Menu mobile
+    document.getElementById("new-chat").onclick = createNewConversation;
+
     document.getElementById("menu-toggle").onclick = () => {
       document.getElementById("sidebar").classList.toggle("open");
     };
 
-    // Optionnel : simule un premier message
-    addMessage("Salut ! Je suis RokyGPT, ta version maison propulsée par Mistral.\nPose-moi n'importe quelle question 😄", "bot");
+    // Init
+    renderConversations();
+    loadConversation(currentConvId);
   </script>
 </body>
 </html>
