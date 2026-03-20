@@ -51,7 +51,16 @@ app.post("/chat", async (req, res) => {
     res.status(500).json({ error: "Erreur API Mistral" });
   }
 });
+import path from "path";
+import { fileURLToPath } from "url";
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Sert index.html directement sur la racine
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "index.html"));
+});
 // Render définit PORT automatiquement
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Serveur lancé sur ${PORT}`));
