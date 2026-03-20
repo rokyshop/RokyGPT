@@ -242,6 +242,8 @@
       };
     }
 
+    let hasSyncedThisConv = false; // drapeau réinitialisé au refresh et au changement de conv
+
     function saveConversations() {
       localStorage.setItem('rokyConversations', JSON.stringify(conversations));
       localStorage.setItem('currentConvId', currentConvId);
@@ -264,6 +266,7 @@
 
     function loadConversation(id) {
       currentConvId = id;
+      hasSyncedThisConv = false; // reset important ici
       saveConversations();
       renderConversations();
 
@@ -280,14 +283,13 @@
       if (conv.messages.length === 0) {
         addMessage("Salut ! Je suis RokyGPT. En quoi puis-je t'aider aujourd'hui ?", "bot");
       }
-
-      // Resynchronisation du contexte vers le serveur
-      resyncConversationToServer();
+      // PAS de resync automatique ici
     }
 
-    async function resyncConversationToServer() {
-      const conv = conversations[currentConvId];
-      if (!conv || conv.messages.length === 0) return;
+    async function syncOnceIfNeeded() {
+      if (hasSyncedThisConv || !conversations[currentConvId]?.messages?.length) {
+        return;
+      }
 
       try {
         const res = await fetch("/restore", {
@@ -295,17 +297,21 @@
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             userId: currentConvId,
-            messages: conv.messages.map(m => ({ role: m.role, content: m.content }))
+            messages: conversations[currentConvId].messages.map(m => ({
+              role: m.role,
+              content: m.content
+            }))
           })
         });
 
         if (res.ok) {
-          console.log("Contexte restauré avec succès");
+          console.log("Contexte synchronisé une seule fois pour cette session");
+          hasSyncedThisConv = true;
         } else {
-          console.warn("Échec de la restauration du contexte");
+          console.warn("Échec de la synchronisation initiale");
         }
       } catch (err) {
-        console.error("Erreur lors de la resync :", err);
+        console.error("Erreur sync :", err);
       }
     }
 
@@ -317,6 +323,7 @@
         messages: []
       };
       currentConvId = id;
+      hasSyncedThisConv = false;
       saveConversations();
       renderConversations();
       loadConversation(id);
@@ -364,6 +371,9 @@
       const msg = input.value.trim();
       if (!msg && filesInput.files.length === 0) return;
 
+      // Synchronisation UNIQUE avant le premier vrai envoi après refresh/changement
+      await syncOnceIfNeeded();
+
       const files = Array.from(filesInput.files);
       addMessage(msg, "user", files);
       updateTitleIfNeeded(msg);
@@ -400,7 +410,6 @@
     function addMessage(text, type, files = []) {
       const div = document.createElement("div");
       div.className = `msg ${type}`;
-
       let rendered = text;
       try {
         if (text.includes("```mermaid")) {
@@ -414,7 +423,6 @@
         console.warn("Erreur markdown:", e);
         rendered = text;
       }
-
       div.innerHTML = rendered;
 
       div.querySelectorAll("pre code").forEach(el => {
