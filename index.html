@@ -48,10 +48,7 @@ async function send() {
   for (const f of filesInput.files) formData.append("files", f);
 
   try {
-    const res = await fetch("/chat", {
-      method: "POST",
-      body: formData
-    });
+    const res = await fetch("/chat", { method: "POST", body: formData });
     const data = await res.json();
     addMessage(data.reply, "bot");
   } catch (err) {
@@ -67,20 +64,18 @@ function addMessage(text, type, files=[]) {
   const div = document.createElement("div");
   div.className = "msg " + type;
 
+  if (!text) text = "";
+
   // Gestion Mermaid
   if (text.includes("```mermaid")) {
     const code = text.split("```mermaid")[1].split("```")[0];
     div.innerHTML = `<div class="mermaid">${code}</div>`;
     setTimeout(() => mermaid.init(), 100);
   } else {
-    // Markdown + code highlight
     div.innerHTML = marked.parse(text);
-    div.querySelectorAll("pre code").forEach((el) => {
-      Prism.highlightElement(el);
-    });
+    div.querySelectorAll("pre code").forEach(el => Prism.highlightElement(el));
   }
 
-  // Affichage fichiers envoyés
   if (files.length > 0) {
     const fileDiv = document.createElement("div");
     fileDiv.className = "file-msg";
