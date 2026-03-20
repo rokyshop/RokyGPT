@@ -280,6 +280,33 @@
       if (conv.messages.length === 0) {
         addMessage("Salut ! Je suis RokyGPT. En quoi puis-je t'aider aujourd'hui ?", "bot");
       }
+
+      // Resynchronisation du contexte vers le serveur
+      resyncConversationToServer();
+    }
+
+    async function resyncConversationToServer() {
+      const conv = conversations[currentConvId];
+      if (!conv || conv.messages.length === 0) return;
+
+      try {
+        const res = await fetch("/restore", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            userId: currentConvId,
+            messages: conv.messages.map(m => ({ role: m.role, content: m.content }))
+          })
+        });
+
+        if (res.ok) {
+          console.log("Contexte restauré avec succès");
+        } else {
+          console.warn("Échec de la restauration du contexte");
+        }
+      } catch (err) {
+        console.error("Erreur lors de la resync :", err);
+      }
     }
 
     function createNewConversation() {
@@ -385,7 +412,7 @@
         }
       } catch (e) {
         console.warn("Erreur markdown:", e);
-        rendered = text; // fallback texte brut
+        rendered = text;
       }
 
       div.innerHTML = rendered;
@@ -398,7 +425,7 @@
         const fileDiv = document.createElement("div");
         fileDiv.style.marginTop = "10px";
         fileDiv.style.fontSize = "0.92rem";
-        fileDiv.style.color = "var(--text-light)";  // ← correction clé ici
+        fileDiv.style.color = "var(--text-light)";
         fileDiv.innerHTML = files.map(f => `📎 ${f.name}`).join(" • ");
         div.appendChild(fileDiv);
       }
@@ -406,7 +433,6 @@
       chat.appendChild(div);
       chat.scrollTop = chat.scrollHeight;
 
-      // Sauvegarde
       conversations[currentConvId].messages.push({
         role: type === "user" ? "user" : "assistant",
         content: text,
