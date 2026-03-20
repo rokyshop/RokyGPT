@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>My AI</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+  <style>
+    body { background:#0f0f0f; color:white; font-family:sans-serif; }
+    #chat { max-width:800px; margin:auto; padding:20px; }
+    .msg { margin:10px 0; padding:10px; border-radius:10px; }
+    .user { background:#1e1e1e; text-align:right; }
+    .bot { background:#2a2a2a; }
+    textarea { width:100%; padding:10px; }
+  </style>
+</head>
+
+<body>
+  <div id="chat"></div>
+
+  <textarea id="input" placeholder="Pose ta question..."></textarea>
+  <button onclick="send()">Envoyer</button>
+
+<script>
+const userId = "user-" + Math.random();
+
+async function send() {
+  const input = document.getElementById("input");
+  const msg = input.value;
+
+  addMessage(msg, "user");
+
+  const res = await fetch("http://localhost:3000/chat", {
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({ message: msg, userId })
+  });
+
+  const data = await res.json();
+
+  addMessage(data.reply, "bot");
+
+  input.value = "";
+}
+
+function addMessage(text, type) {
+  const chat = document.getElementById("chat");
+  const div = document.createElement("div");
+  div.className = "msg " + type;
+
+  // support code block & mermaid
+  if (text.includes("```mermaid")) {
+    const code = text.split("```mermaid")[1].split("```")[0];
+    div.innerHTML = `<div class="mermaid">${code}</div>`;
+    setTimeout(() => mermaid.init(), 100);
+  } else {
+    div.innerText = text;
+  }
+
+  chat.appendChild(div);
+}
+</script>
+</body>
+</html>
