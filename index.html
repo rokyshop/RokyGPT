@@ -1,44 +1,52 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>My AI</title>
+  <title>ChatGPT Maison</title>
   <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
   <style>
     body { background:#0f0f0f; color:white; font-family:sans-serif; }
-    #chat { max-width:800px; margin:auto; padding:20px; }
-    .msg { margin:10px 0; padding:10px; border-radius:10px; }
+    #chat { max-width:800px; margin:auto; padding:20px; height:80vh; overflow-y:auto; border:1px solid #333; border-radius:10px;}
+    .msg { margin:10px 0; padding:10px; border-radius:10px; word-wrap: break-word; }
     .user { background:#1e1e1e; text-align:right; }
     .bot { background:#2a2a2a; }
-    textarea { width:100%; padding:10px; }
+    textarea { width:100%; padding:10px; margin-top:10px; border-radius:5px; }
+    button { padding:10px; margin-top:5px; border-radius:5px; cursor:pointer; }
   </style>
 </head>
-
 <body>
-  <div id="chat"></div>
 
-  <textarea id="input" placeholder="Pose ta question..."></textarea>
-  <button onclick="send()">Envoyer</button>
+<div id="chat"></div>
+
+<textarea id="input" placeholder="Tape ton message ici..."></textarea>
+<button onclick="send()">Envoyer</button>
 
 <script>
+mermaid.initialize({ startOnLoad:true });
 const userId = "user-" + Math.random();
 
 async function send() {
   const input = document.getElementById("input");
   const msg = input.value;
+  if (!msg) return;
 
   addMessage(msg, "user");
 
-  const res = await fetch("http://localhost:3000/chat", {
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({ message: msg, userId })
-  });
+  try {
+    const res = await fetch("/chat", {
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({ message: msg, userId })
+    });
 
-  const data = await res.json();
-
-  addMessage(data.reply, "bot");
+    const data = await res.json();
+    addMessage(data.reply, "bot");
+  } catch(err) {
+    addMessage("Erreur serveur", "bot");
+    console.error(err);
+  }
 
   input.value = "";
+  document.getElementById("chat").scrollTop = document.getElementById("chat").scrollHeight;
 }
 
 function addMessage(text, type) {
@@ -46,7 +54,7 @@ function addMessage(text, type) {
   const div = document.createElement("div");
   div.className = "msg " + type;
 
-  // support code block & mermaid
+  // gestion code blocks & Mermaid
   if (text.includes("```mermaid")) {
     const code = text.split("```mermaid")[1].split("```")[0];
     div.innerHTML = `<div class="mermaid">${code}</div>`;
