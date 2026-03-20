@@ -1,91 +1,346 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<title>RokyGPT Pro</title>
-<script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs/themes/prism-tomorrow.css">
-<script src="https://cdn.jsdelivr.net/npm/prismjs/prism.js"></script>
-<style>
-  body { background: #0f111a; color: #fff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin:0; padding:0; display:flex; flex-direction:column; height:100vh;}
-  #chat { flex:1; overflow-y:auto; padding:20px; max-width:900px; margin:auto; display:flex; flex-direction:column; gap:10px;}
-  .msg { padding:12px 16px; border-radius:12px; word-wrap:break-word; max-width:70%; line-height:1.4; font-size:15px; white-space:pre-wrap; }
-  .user { background:#1e1e2a; align-self:flex-end; text-align:right;}
-  .bot { background:#2a2a3a; align-self:flex-start; text-align:left;}
-  textarea { width:calc(100% - 24px); margin:10px auto; padding:12px; border-radius:8px; border:none; resize:none; font-size:15px; background:#1c1c29; color:white;}
-  button { width:calc(100% - 24px); margin:0 auto 10px auto; padding:12px; border-radius:8px; border:none; background:#4f46e5; color:white; font-weight:bold; cursor:pointer; font-size:15px;}
-  pre { background:#1c1c29; padding:10px; border-radius:8px; overflow-x:auto;}
-  code { font-family:'Courier New', Courier, monospace; background:#1c1c29; padding:2px 4px; border-radius:4px;}
-  .mermaid { background:#1c1c29; padding:10px; border-radius:8px; overflow-x:auto;}
-  .file-msg { margin-top:5px; font-size:14px; color:#bbb;}
-  .msg img { max-width:100%; border-radius:8px; margin-top:5px;}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>RokyGPT Pro</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked@14/marked.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1/themes/prism-tomorrow.min.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1/prism.min.js"></script>
+
+  <style>
+    :root {
+      --bg: #0d0f17;
+      --sidebar-bg: #11151f;
+      --chat-bg: #0f111a;
+      --msg-user: #1e293b;
+      --msg-bot: #1e293b;
+      --accent: #6366f1;       /* indigo-violet comme ChatGPT/Grok */
+      --text: #e2e8f0;
+      --text-light: #94a3b8;
+      --border: #1e293b;
+    }
+
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      height: 100vh;
+      display: flex;
+      overflow: hidden;
+    }
+
+    /* ──────────────── SIDEBAR ──────────────── */
+    #sidebar {
+      width: 260px;
+      background: var(--sidebar-bg);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.3s ease;
+      z-index: 100;
+    }
+
+    #sidebar-header {
+      padding: 16px;
+      border-bottom: 1px solid var(--border);
+      font-weight: 600;
+      font-size: 1.1rem;
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    #new-chat {
+      margin: 16px;
+      padding: 10px;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: background 0.2s;
+    }
+    #new-chat:hover { background: #4f46e5; }
+
+    #conversations {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px 0;
+    }
+
+    .conv-item {
+      padding: 12px 16px;
+      cursor: pointer;
+      color: var(--text-light);
+      border-radius: 6px;
+      margin: 4px 12px;
+      transition: all 0.2s;
+    }
+    .conv-item:hover,
+    .conv-item.active {
+      background: rgba(99,102,241,0.12);
+      color: white;
+    }
+
+    /* ──────────────── MAIN CHAT ──────────────── */
+    #main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: var(--chat-bg);
+    }
+
+    #chat-header {
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--border);
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(15,17,26,0.6);
+      backdrop-filter: blur(8px);
+    }
+
+    #chat {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      max-width: 860px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .msg {
+      max-width: 80%;
+      padding: 12px 16px;
+      border-radius: 12px;
+      line-height: 1.5;
+      font-size: 15px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .user  { align-self: flex-end; background: var(--accent); color: white; }
+    .bot   { align-self: flex-start; background: var(--msg-bot); border: 1px solid var(--border); }
+
+    .msg img { max-width: 100%; border-radius: 10px; margin-top: 8px; }
+    pre { background:#1e293b; padding:14px; border-radius:10px; overflow-x:auto; margin:10px 0; }
+    code { font-family: 'Consolas', monospace; }
+
+    .mermaid { background:#1e293b; padding:16px; border-radius:10px; }
+
+    /* ──────────────── INPUT AREA ──────────────── */
+    #input-area {
+      padding: 16px 24px;
+      border-top: 1px solid var(--border);
+      background: var(--chat-bg);
+    }
+
+    #input-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: #1e293b;
+      border-radius: 12px;
+      padding: 8px 16px;
+    }
+
+    #input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: white;
+      font-size: 16px;
+      resize: none;
+      min-height: 24px;
+      max-height: 160px;
+      line-height: 1.4;
+      outline: none;
+    }
+
+    #files { display: none; }
+    #attach-btn {
+      cursor: pointer;
+      color: var(--text-light);
+      font-size: 1.3rem;
+      padding: 8px;
+    }
+
+    #send-btn {
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    #send-btn:hover { background: #4f46e5; }
+
+    /* Mobile – sidebar cachée */
+    @media (max-width: 768px) {
+      #sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        transform: translateX(-100%);
+      }
+      #sidebar.open { transform: translateX(0); }
+
+      #chat-header { padding-left: 60px; }
+      #menu-toggle {
+        display: block;
+        position: absolute;
+        left: 16px;
+        font-size: 1.4rem;
+        cursor: pointer;
+        color: var(--text-light);
+      }
+    }
+
+    #menu-toggle { display: none; }
+  </style>
 </head>
 <body>
 
-<div id="chat"></div>
-<textarea id="input" rows="2" placeholder="Tape ton message ici..."></textarea>
-<input type="file" id="files" multiple style="margin:auto;">
-<button onclick="send()">Envoyer</button>
+  <!-- Sidebar -->
+  <aside id="sidebar">
+    <div id="sidebar-header">
+      <span>RokyGPT</span>
+    </div>
+    <button id="new-chat">+ Nouveau chat</button>
+    <div id="conversations">
+      <!-- Les conversations seront ajoutées ici dynamiquement plus tard -->
+      <div class="conv-item active">Conversation actuelle</div>
+      <div class="conv-item">Projet React Router</div>
+      <div class="conv-item">Idées logo 2026</div>
+    </div>
+  </aside>
 
-<script>
-mermaid.initialize({ startOnLoad:true });
-const userId = "user-" + Math.random();
+  <!-- Main area -->
+  <main id="main">
+    <div id="chat-header">
+      <div id="menu-toggle">☰</div>
+      <span>Chat avec RokyGPT</span>
+    </div>
 
-async function send() {
-  const input = document.getElementById("input");
-  const filesInput = document.getElementById("files");
-  const msg = input.value.trim();
-  if (!msg && filesInput.files.length === 0) return;
+    <div id="chat"></div>
 
-  addMessage(msg, "user", filesInput.files);
-  input.value = "";
+    <div id="input-area">
+      <div id="input-wrapper">
+        <label for="files" id="attach-btn">📎</label>
+        <input type="file" id="files" multiple />
 
-  const formData = new FormData();
-  formData.append("message", msg);
-  formData.append("userId", userId);
-  for (const f of filesInput.files) formData.append("files", f);
+        <textarea id="input" rows="1" placeholder="Envoyer un message à RokyGPT..."></textarea>
 
-  try {
-    const res = await fetch("/chat", { method: "POST", body: formData });
-    const data = await res.json();
-    addMessage(data.reply, "bot");
-  } catch (err) {
-    addMessage("Erreur serveur", "bot");
-    console.error(err);
-  }
+        <button id="send-btn">➤</button>
+      </div>
+    </div>
+  </main>
 
-  filesInput.value = "";
-}
+  <script>
+    mermaid.initialize({ startOnLoad: true, theme: 'dark' });
 
-function addMessage(text, type, files=[]) {
-  const chat = document.getElementById("chat");
-  const div = document.createElement("div");
-  div.className = "msg " + type;
+    const userId = "user-" + Math.random().toString(36).slice(2);
+    const chat = document.getElementById("chat");
+    const input = document.getElementById("input");
+    const filesInput = document.getElementById("files");
 
-  if (!text) text = "";
+    // Ajuste automatiquement la hauteur du textarea
+    input.addEventListener("input", () => {
+      input.style.height = "auto";
+      input.style.height = Math.min(input.scrollHeight, 160) + "px";
+    });
 
-  // Gestion Mermaid
-  if (text.includes("```mermaid")) {
-    const code = text.split("```mermaid")[1].split("```")[0];
-    div.innerHTML = `<div class="mermaid">${code}</div>`;
-    setTimeout(() => mermaid.init(), 100);
-  } else {
-    div.innerHTML = marked.parse(text);
-    div.querySelectorAll("pre code").forEach(el => Prism.highlightElement(el));
-  }
+    async function send() {
+      const msg = input.value.trim();
+      if (!msg && filesInput.files.length === 0) return;
 
-  if (files.length > 0) {
-    const fileDiv = document.createElement("div");
-    fileDiv.className = "file-msg";
-    fileDiv.innerHTML = Array.from(files).map(f => `📎 ${f.name}`).join("<br>");
-    div.appendChild(fileDiv);
-  }
+      addMessage(msg, "user", Array.from(filesInput.files));
 
-  chat.appendChild(div);
-  chat.scrollTop = chat.scrollHeight;
-}
-</script>
+      const formData = new FormData();
+      formData.append("message", msg);
+      formData.append("userId", userId);
+      for (const f of filesInput.files) formData.append("files", f);
+
+      input.value = "";
+      input.style.height = "24px";
+      filesInput.value = "";
+
+      try {
+        const res = await fetch("/chat", { method: "POST", body: formData });
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        const data = await res.json();
+        addMessage(data.reply || "Pas de réponse...", "bot");
+      } catch (err) {
+        console.error(err);
+        addMessage("Erreur – le serveur ne répond pas", "bot");
+      }
+    }
+
+    function addMessage(text, type, files = []) {
+      const div = document.createElement("div");
+      div.className = `msg ${type}`;
+
+      let rendered = "";
+      if (text.includes("```mermaid")) {
+        const code = text.split("```mermaid")[1]?.split("```")[0] || "";
+        rendered = `<div class="mermaid">${code.trim()}</div>`;
+        setTimeout(() => mermaid.init(), 150);
+      } else {
+        rendered = marked.parse(text);
+      }
+
+      div.innerHTML = rendered;
+
+      // Highlight code
+      div.querySelectorAll("pre code").forEach(el => {
+        Prism.highlightElement(el);
+      });
+
+      // Fichiers joints
+      if (files.length > 0 && type === "user") {
+        const fileDiv = document.createElement("div");
+        fileDiv.style.marginTop = "8px";
+        fileDiv.style.fontSize = "0.9rem";
+        fileDiv.style.color = "#94a3b8";
+        fileDiv.innerHTML = files.map(f => `📎 ${f.name}`).join(" · ");
+        div.appendChild(fileDiv);
+      }
+
+      chat.appendChild(div);
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    // Événements envoi
+    document.getElementById("send-btn").onclick = send;
+    input.addEventListener("keydown", e => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        send();
+      }
+    });
+
+    // Menu mobile
+    document.getElementById("menu-toggle").onclick = () => {
+      document.getElementById("sidebar").classList.toggle("open");
+    };
+
+    // Optionnel : simule un premier message
+    addMessage("Salut ! Je suis RokyGPT, ta version maison propulsée par Mistral.\nPose-moi n'importe quelle question 😄", "bot");
+  </script>
 </body>
 </html>
