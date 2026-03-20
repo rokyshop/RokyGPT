@@ -242,7 +242,7 @@
       };
     }
 
-    let hasSyncedThisConv = false; // drapeau réinitialisé au refresh et au changement de conv
+    let hasSyncedThisConv = false; 
 
     function saveConversations() {
       localStorage.setItem('rokyConversations', JSON.stringify(conversations));
@@ -264,9 +264,10 @@
       });
     }
 
+    // CORRECTION : loadConversation appelle renderMessageToUI (sans push)
     function loadConversation(id) {
       currentConvId = id;
-      hasSyncedThisConv = false; // reset important ici
+      hasSyncedThisConv = false; 
       saveConversations();
       renderConversations();
 
@@ -277,13 +278,12 @@
       chat.innerHTML = "";
 
       conv.messages.forEach(msg => {
-        addMessage(msg.content, msg.role === "user" ? "user" : "bot", msg.files || []);
+        renderMessageToUI(msg.content, msg.role === "user" ? "user" : "bot", msg.files || []);
       });
 
       if (conv.messages.length === 0) {
-        addMessage("Salut ! Je suis RokyGPT. En quoi puis-je t'aider aujourd'hui ?", "bot");
+        renderMessageToUI("Salut ! Je suis RokyGPT. En quoi puis-je t'aider aujourd'hui ?", "bot");
       }
-      // PAS de resync automatique ici
     }
 
     async function syncOnceIfNeeded() {
@@ -305,10 +305,7 @@
         });
 
         if (res.ok) {
-          console.log("Contexte synchronisé une seule fois pour cette session");
           hasSyncedThisConv = true;
-        } else {
-          console.warn("Échec de la synchronisation initiale");
         }
       } catch (err) {
         console.error("Erreur sync :", err);
@@ -371,7 +368,6 @@
       const msg = input.value.trim();
       if (!msg && filesInput.files.length === 0) return;
 
-      // Synchronisation UNIQUE avant le premier vrai envoi après refresh/changement
       await syncOnceIfNeeded();
 
       const files = Array.from(filesInput.files);
@@ -407,7 +403,8 @@
       }
     }
 
-    function addMessage(text, type, files = []) {
+    // CORRECTION : renderMessageToUI s'occupe de l'affichage pur
+    function renderMessageToUI(text, type, files = []) {
       const div = document.createElement("div");
       div.className = `msg ${type}`;
       let rendered = text;
@@ -420,7 +417,6 @@
           rendered = marked.parse(text);
         }
       } catch (e) {
-        console.warn("Erreur markdown:", e);
         rendered = text;
       }
       div.innerHTML = rendered;
@@ -440,7 +436,13 @@
 
       chat.appendChild(div);
       chat.scrollTop = chat.scrollHeight;
+    }
 
+    // CORRECTION : addMessage appelle render + push une seule fois
+    function addMessage(text, type, files = []) {
+      renderMessageToUI(text, type, files);
+
+      // On enregistre seulement ici, lors de la création d'un NOUVEAU message
       conversations[currentConvId].messages.push({
         role: type === "user" ? "user" : "assistant",
         content: text,
