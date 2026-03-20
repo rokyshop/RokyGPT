@@ -19,23 +19,20 @@ const API_KEY = process.env.MISTRAL_API_KEY;
 // Mémoire persistante
 const MEMORY_FILE = "conversations.json";
 let conversations = {};
-
-// Charger la mémoire existante
 if (fs.existsSync(MEMORY_FILE)) {
-  conversations = JSON.parse(fs.readFileSync(MEMORY_FILE));
+  conversations = JSON.parse(fs.readFileSync(MEMORY_FILE, "utf8"));
 }
 
-// Sauvegarder mémoire
 function saveMemory() {
   fs.writeFileSync(MEMORY_FILE, JSON.stringify(conversations));
 }
 
-// Endpoint chat avec texte + fichiers
+// Endpoint chat
 app.post("/chat", upload.array("files"), async (req, res) => {
   const { message, userId } = req.body;
   const files = req.files || [];
 
-  if (!userId || !message) return res.status(400).json({ error: "Missing userId or message" });
+  if (!userId) return res.status(400).json({ error: "Missing userId" });
 
   if (!conversations[userId]) {
     conversations[userId] = [
@@ -46,17 +43,16 @@ app.post("/chat", upload.array("files"), async (req, res) => {
     ];
   }
 
-  let content = message;
+  let content = message || "";
 
-  // Ajouter noms des fichiers envoyés dans le message pour Mistral
   if (files.length > 0) {
     const fileNames = files.map(f => f.originalname).join(", ");
-    content += `\nLes fichiers envoyés : ${fileNames}`;
+    content += `\nFichiers envoyés : ${fileNames}`;
   }
 
   conversations[userId].push({ role: "user", content });
 
-  // Limite mémoire pour ne pas exploser
+  // Limite mémoire
   if (conversations[userId].length > 30) {
     conversations[userId] = conversations[userId].slice(-30);
   }
@@ -73,7 +69,6 @@ app.post("/chat", upload.array("files"), async (req, res) => {
         messages: conversations[userId]
       })
     });
-
     const data = await response.json();
     const reply = data.choices?.[0]?.message?.content || "Je n'ai pas compris, peux-tu reformuler ?";
 
@@ -87,17 +82,15 @@ app.post("/chat", upload.array("files"), async (req, res) => {
   }
 });
 
-// Serve frontend index.html
+// Frontend
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "index.html"));
 });
 
-// Serve static files (ex: uploads)
+// Uploads statiques
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-// Render définit PORT automatiquement
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Serveur lancé sur ${PORT}`));
