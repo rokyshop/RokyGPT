@@ -15,15 +15,14 @@
       --bg: #0a0a0f;
       --sidebar-bg: #101015;
       --chat-bg: #0c0c12;
-      --msg-user: #1a2b44;     /* gris-bleu très discret */
+      --msg-user: #1a2b44;
       --msg-bot: #17171f;
-      --accent: #5a7cff;       /* bleu-gris subtil – pas trop flashy */
+      --accent: #5a7cff;
       --text: #d4d4e0;
       --text-light: #8a8aa3;
       --border: #1f1f2a;
       --hover: #1e1e2e;
     }
-
     * { margin:0; padding:0; box-sizing:border-box; }
     body {
       background: var(--bg);
@@ -33,7 +32,6 @@
       display: flex;
       overflow: hidden;
     }
-
     #sidebar {
       width: 260px;
       background: var(--sidebar-bg);
@@ -43,7 +41,6 @@
       transition: transform 0.3s ease;
       z-index: 100;
     }
-
     #sidebar-header {
       padding: 16px;
       border-bottom: 1px solid var(--border);
@@ -51,7 +48,6 @@
       font-size: 1.2rem;
       color: var(--text);
     }
-
     #new-chat {
       margin: 16px 16px 8px;
       padding: 10px;
@@ -63,13 +59,11 @@
       font-weight: 500;
     }
     #new-chat:hover { opacity: 0.9; }
-
     #conversations {
       flex: 1;
       overflow-y: auto;
       padding: 8px 0;
     }
-
     .conv-item {
       padding: 12px 16px;
       cursor: pointer;
@@ -94,14 +88,12 @@
       cursor: pointer;
     }
     .conv-item:hover .delete-btn { opacity: 0.7; }
-
     #main {
       flex: 1;
       display: flex;
       flex-direction: column;
       background: var(--chat-bg);
     }
-
     #chat-header {
       padding: 12px 20px;
       border-bottom: 1px solid var(--border);
@@ -109,7 +101,6 @@
       background: rgba(12,12,18,0.7);
       backdrop-filter: blur(10px);
     }
-
     #chat {
       flex: 1;
       overflow-y: auto;
@@ -121,7 +112,6 @@
       margin: 0 auto;
       width: 100%;
     }
-
     .msg {
       max-width: 82%;
       padding: 13px 18px;
@@ -131,21 +121,17 @@
       white-space: pre-wrap;
       word-break: break-word;
     }
-    .user  { align-self: flex-end; background: var(--msg-user); color: #e0e7ff; }
-    .bot   { align-self: flex-start; background: var(--msg-bot); border: 1px solid var(--border); }
-
+    .user { align-self: flex-end; background: var(--msg-user); color: #e0e7ff; }
+    .bot { align-self: flex-start; background: var(--msg-bot); border: 1px solid var(--border); }
     .msg img { max-width: 100%; border-radius: 12px; margin-top: 10px; }
     pre { background:#14141e; padding:16px; border-radius:12px; overflow-x:auto; margin:12px 0; }
     code { font-family: 'Consolas', monospace; }
-
     .mermaid { background:#14141e; padding:18px; border-radius:12px; }
-
     #input-area {
       padding: 16px 24px;
       border-top: 1px solid var(--border);
       background: var(--chat-bg);
     }
-
     #input-wrapper {
       display: flex;
       align-items: center;
@@ -155,7 +141,6 @@
       border-radius: 14px;
       padding: 10px 18px;
     }
-
     #input {
       flex: 1;
       background: transparent;
@@ -168,14 +153,12 @@
       line-height: 1.45;
       outline: none;
     }
-
     #files { display: none; }
     #attach-btn {
       cursor: pointer;
       color: var(--text-light);
       font-size: 1.4rem;
     }
-
     #send-btn {
       background: var(--accent);
       color: white;
@@ -190,14 +173,12 @@
       font-size: 1.1rem;
     }
     #send-btn:hover { background: #4a68e0; }
-
     .thinking {
       align-self: flex-start;
       color: var(--text-light);
       font-style: italic;
       padding: 12px 18px;
     }
-
     @media (max-width: 768px) {
       #sidebar {
         position: fixed;
@@ -269,7 +250,6 @@
     function renderConversations() {
       const container = document.getElementById("conversations");
       container.innerHTML = "";
-
       Object.values(conversations).forEach(conv => {
         const item = document.createElement("div");
         item.className = `conv-item ${conv.id === currentConvId ? 'active' : ''}`;
@@ -378,14 +358,14 @@
 
       try {
         const res = await fetch("/chat", { method: "POST", body: formData });
-        if (!res.ok) throw new Error("Erreur HTTP");
+        if (!res.ok) throw new Error("Erreur HTTP " + res.status);
         const data = await res.json();
 
         chat.removeChild(thinking);
         addMessage(data.reply || "Pas de réponse...", "bot");
       } catch (err) {
         console.error(err);
-        chat.removeChild(thinking);
+        if (thinking.parentNode) chat.removeChild(thinking);
         addMessage("Erreur – réessaie dans quelques secondes", "bot");
       }
     }
@@ -394,24 +374,31 @@
       const div = document.createElement("div");
       div.className = `msg ${type}`;
 
-      let rendered = "";
-      if (text.includes("```mermaid")) {
-        const code = text.split("```mermaid")[1]?.split("```")[0] || "";
-        rendered = `<div class="mermaid">${code.trim()}</div>`;
-        setTimeout(() => mermaid.init(), 150);
-      } else {
-        rendered = marked.parse(text);
+      let rendered = text;
+      try {
+        if (text.includes("```mermaid")) {
+          const code = text.split("```mermaid")[1]?.split("```")[0] || "";
+          rendered = `<div class="mermaid">${code.trim()}</div>`;
+          setTimeout(() => mermaid.init(), 150);
+        } else {
+          rendered = marked.parse(text);
+        }
+      } catch (e) {
+        console.warn("Erreur markdown:", e);
+        rendered = text; // fallback texte brut
       }
 
       div.innerHTML = rendered;
 
-      div.querySelectorAll("pre code").forEach(el => Prism.highlightElement(el));
+      div.querySelectorAll("pre code").forEach(el => {
+        try { Prism.highlightElement(el); } catch {}
+      });
 
       if (files.length > 0 && type === "user") {
         const fileDiv = document.createElement("div");
         fileDiv.style.marginTop = "10px";
         fileDiv.style.fontSize = "0.92rem";
-        fileDiv.style.color = var(--text-light);
+        fileDiv.style.color = "var(--text-light)";  // ← correction clé ici
         fileDiv.innerHTML = files.map(f => `📎 ${f.name}`).join(" • ");
         div.appendChild(fileDiv);
       }
@@ -419,11 +406,11 @@
       chat.appendChild(div);
       chat.scrollTop = chat.scrollHeight;
 
-      // Sauvegarde dans localStorage
+      // Sauvegarde
       conversations[currentConvId].messages.push({
         role: type === "user" ? "user" : "assistant",
         content: text,
-        files: files.map(f => ({ name: f.name })) // on garde juste les noms
+        files: files.map(f => ({ name: f.name }))
       });
       saveConversations();
     }
