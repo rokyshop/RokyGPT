@@ -17,6 +17,21 @@ const upload = multer({
 });
 
 const API_KEY = process.env.MISTRAL_API_KEY;
+// Ajoute cette route pour restaurer le contexte complet
+app.post("/restore", express.json(), (req, res) => {
+  const { userId, messages } = req.body;
+  if (!userId || !Array.isArray(messages)) {
+    return res.status(400).json({ error: "Données invalides pour restore" });
+  }
+
+  // On recrée le contexte complet (system + historique)
+  conversations[userId] = [
+    { role: "system", content: "Tu es RokyGPT, un assistant utile, concis et un peu fun." },
+    ...messages
+  ];
+
+  res.json({ success: true });
+});
 
 app.post("/chat", upload.array("files"), async (req, res) => {
   const { message, userId } = req.body;
