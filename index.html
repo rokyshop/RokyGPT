@@ -148,12 +148,38 @@
       line-height: 1.6;
       font-size: 16px;
       animation: fadeIn 0.4s;
+      position: relative;
     }
 
     .user { align-self: flex-end; background: var(--msg-user); color: white; }
     .bot  { align-self: flex-start; background: var(--msg-bot); border: 1px solid var(--border); }
 
     @keyframes fadeIn { from { opacity:0; transform: translateY(16px); } to { opacity:1; transform: translateY(0); } }
+
+    /* BOUTONS ACTIONS SUR MESSAGES */
+    .msg-actions {
+      position: absolute;
+      top: 8px;
+      right: 12px;
+      display: flex;
+      gap: 8px;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .msg:hover .msg-actions { opacity: 0.8; }
+
+    .action-btn {
+      background: rgba(0,0,0,0.4);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 4px 8px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .action-btn:hover { background: rgba(0,0,0,0.7); }
 
     /* INPUT */
     #input-area {
@@ -192,7 +218,7 @@
       padding: 8px;
     }
 
-    /* MODALS */
+    /* MODALS (settings + login) */
     .modal {
       display: none;
       position: fixed;
@@ -212,8 +238,23 @@
       color: var(--text);
     }
 
-    .modal-content h2 { margin-bottom: 20px; }
     .setting-item { margin: 16px 0; display: flex; justify-content: space-between; align-items: center; }
+
+    /* TOAST (feedback copie) */
+    #toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.8);
+      color: white;
+      padding: 12px 24px;
+      border-radius: 8px;
+      z-index: 2000;
+      opacity: 0;
+      transition: opacity 0.4s;
+      pointer-events: none;
+    }
 
     /* Responsive */
     @media (max-width: 768px) {
@@ -254,6 +295,9 @@
       </div>
     </div>
   </main>
+
+  <!-- TOAST FEEDBACK -->
+  <div id="toast">Copié !</div>
 
   <!-- SETTINGS MODAL -->
   <div id="settings-modal" class="modal">
@@ -313,10 +357,9 @@
 
     function login() {
       const username = document.getElementById('login-username').value.trim();
-      const password = document.getElementById('login-password').value.trim();
       if (username) {
         localStorage.setItem('user', username);
-        localStorage.setItem('token', 'fake-jwt-' + Date.now()); // simulation JWT
+        localStorage.setItem('token', 'fake-jwt-' + Date.now());
         currentUser = username;
         document.getElementById('current-user-display').textContent = username;
         document.getElementById('login-modal').style.display = 'none';
@@ -352,9 +395,74 @@
 
     document.getElementById('profile-btn').onclick = openSettings;
 
-    // ─── LE RESTE DE TON SCRIPT (conversations, chat, sync, etc.) ───
-    // (je le mets intégralement ici pour que tu aies TOUT en un seul fichier)
+    // ─── TOAST ───
+    function showToast(message = "Copié !") {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.style.opacity = '1';
+      setTimeout(() => { toast.style.opacity = '0'; }, 2000);
+    }
 
+    // ─── ACTIONS MESSAGES ───
+    function copyMessage(text) {
+      navigator.clipboard.writeText(text).then(() => {
+        showToast("Copié dans le presse-papiers !");
+      }).catch(err => {
+        showToast("Erreur lors de la copie");
+        console.error(err);
+      });
+    }
+
+    async function regenerateMessage(msgIndex) {
+      const conv = conversations[currentConvId];
+      if (!conv || msgIndex < 0 || msgIndex >= conv.messages.length) return;
+
+      // On prend le dernier message utilisateur avant celui-ci (ou le tout dernier user)
+      let lastUserMsg = null;
+      for (let i = msgIndex - 1; i >= 0; i--) {
+        if (conv.messages[i].role === "user") {
+          lastUserMsg = conv.messages[i].content;
+          break;
+        }
+      }
+      if (!lastUserMsg) {
+        showToast("Aucun message utilisateur à régénérer");
+        return;
+      }
+
+      // On supprime la réponse actuelle et celles après (si plusieurs régénérations)
+      conv.messages.splice(msgIndex);
+
+      // On ajoute le thinking
+      const thinking = document.createElement("div");
+      thinking.className = "thinking";
+      thinking.innerHTML = "RokyGPT réfléchit<span>.</span><span>.</span><span>.</span>";
+      chat.appendChild(thinking);
+      chat.scrollTop = chat.scrollHeight;
+
+      // On resync (au cas où)
+      await syncOnceIfNeeded();
+
+      // On envoie à nouveau le dernier user message
+      const formData = new FormData();
+      formData.append("message", lastUserMsg);
+      formData.append("userId", currentConvId);
+
+      try {
+        const res = await fetch("/chat", { method: "POST", body: formData });
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        const data = await res.json();
+
+        chat.removeChild(thinking);
+        addMessage(data.reply || "Pas de réponse...", "bot");
+      } catch (err) {
+        console.error(err);
+        if (thinking.parentNode) chat.removeChild(thinking);
+        addMessage("Erreur lors de la régénération", "bot");
+      }
+    }
+
+    // ─── LE RESTE DU SCRIPT ───
     mermaid.initialize({ startOnLoad: true, theme: 'dark' });
 
     let currentConvId = localStorage.getItem('currentConvId') || Date.now().toString();
@@ -397,12 +505,12 @@
       const chat = document.getElementById("chat");
       chat.innerHTML = "";
 
-      conv.messages.forEach(msg => {
-        renderMessageToUI(msg.content, msg.role === "user" ? "user" : "bot", msg.files || []);
+      conv.messages.forEach((msg, index) => {
+        renderMessageToUI(msg.content, msg.role === "user" ? "user" : "bot", msg.files || [], index);
       });
 
       if (conv.messages.length === 0) {
-        renderMessageToUI("Salut ! Je suis RokyGPT, comment puis-je t’aider ?", "bot");
+        renderMessageToUI("Salut ! Je suis RokyGPT, comment puis-je t’aider ?", "bot", [], -1);
       }
     }
 
@@ -510,7 +618,7 @@
       }
     }
 
-    function renderMessageToUI(text, type, files = []) {
+    function renderMessageToUI(text, type, files = [], index = -1) {
       const div = document.createElement("div");
       div.className = `msg ${type}`;
 
@@ -542,12 +650,35 @@
         div.appendChild(fileDiv);
       }
 
+      // Ajout des boutons d'action (copier + régénérer)
+      const actions = document.createElement("div");
+      actions.className = "msg-actions";
+
+      const copyBtn = document.createElement("button");
+      copyBtn.className = "action-btn";
+      copyBtn.textContent = "Copier";
+      copyBtn.onclick = () => copyMessage(text);
+      actions.appendChild(copyBtn);
+
+      if (type === "bot" && index >= 0) {
+        const regenBtn = document.createElement("button");
+        regenBtn.className = "action-btn";
+        regenBtn.textContent = "Régénérer";
+        regenBtn.onclick = () => regenerateMessage(index);
+        actions.appendChild(regenBtn);
+      }
+
+      div.appendChild(actions);
+
       chat.appendChild(div);
       chat.scrollTop = chat.scrollHeight;
     }
 
     function addMessage(text, type, files = []) {
-      renderMessageToUI(text, type, files);
+      // On ajoute avec index = longueur actuelle (avant push)
+      const index = conversations[currentConvId].messages.length;
+      renderMessageToUI(text, type, files, index);
+
       conversations[currentConvId].messages.push({
         role: type === "user" ? "user" : "assistant",
         content: text,
