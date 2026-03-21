@@ -12,38 +12,34 @@
 
   <style>
     :root {
-      --bg-primary: #0f0f11;
-      --bg-secondary: #111113;
-      --sidebar-bg: #0a0a0c;
-      --message-user: #1d4ed8;      /* bleu ChatGPT */
-      --message-bot: #1e1e1f;
-      --text-primary: #e5e7eb;
-      --text-secondary: #9ca3af;
-      --border: #1f2937;
-      --accent: #3b82f6;
-      --input-bg: rgba(31, 41, 55, 0.6);
-      --shadow: 0 4px 30px rgba(0,0,0,0.4);
+      --bg: #0f0f11;
+      --sidebar: #202123;
+      --chat-bg: #0f0f11;
+      --msg-user: #1a7bff;       /* bleu ChatGPT user */
+      --msg-bot: #2d2d2f;        /* gris très foncé bot */
+      --text: #ececf1;
+      --text-muted: #acacbe;
+      --border: #343541;
+      --accent: #10a37f;         /* vert subtil pour boutons */
+      --input-bg: #40414f;
+      --input-border: #565869;
+      --shadow: 0 4px 30px rgba(0,0,0,0.5);
     }
 
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
+    * { margin:0; padding:0; box-sizing:border-box; }
     body {
-      background: var(--bg-primary);
-      color: var(--text-primary);
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       height: 100vh;
       display: flex;
       overflow: hidden;
     }
 
-    /* ──────────────── SIDEBAR ──────────────── */
+    /* SIDEBAR – exactement comme ChatGPT */
     #sidebar {
       width: 260px;
-      background: var(--sidebar-bg);
+      background: var(--sidebar);
       border-right: 1px solid var(--border);
       display: flex;
       flex-direction: column;
@@ -51,28 +47,25 @@
     }
 
     #sidebar-header {
-      padding: 16px;
-      font-size: 1.25rem;
+      padding: 12px 16px;
+      font-size: 1.1rem;
       font-weight: 600;
-      color: white;
+      color: var(--text);
       border-bottom: 1px solid var(--border);
     }
 
     #new-chat {
-      margin: 16px;
-      padding: 10px 16px;
+      margin: 16px 16px 8px;
+      padding: 10px;
       background: var(--accent);
       color: white;
       border: none;
-      border-radius: 12px;
+      border-radius: 8px;
       cursor: pointer;
-      font-size: 0.95rem;
       font-weight: 500;
       transition: background 0.2s;
     }
-    #new-chat:hover {
-      background: #2563eb;
-    }
+    #new-chat:hover { background: #0e8c6d; }
 
     #conversations {
       flex: 1;
@@ -83,43 +76,42 @@
     .conv-item {
       padding: 12px 20px;
       cursor: pointer;
-      color: var(--text-secondary);
-      font-size: 0.95rem;
+      color: var(--text-muted);
+      font-size: 0.94rem;
       transition: all 0.15s;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+      border-radius: 6px;
+      margin: 0 8px;
     }
     .conv-item:hover,
     .conv-item.active {
-      background: rgba(59,130,246,0.1);
+      background: rgba(255,255,255,0.08);
       color: white;
     }
     .conv-item .delete-btn {
       opacity: 0;
       color: #ef4444;
       font-size: 1rem;
+      margin-left: auto;
     }
-    .conv-item:hover .delete-btn {
-      opacity: 0.8;
-    }
+    .conv-item:hover .delete-btn { opacity: 0.8; }
 
-    /* ──────────────── MAIN ──────────────── */
+    /* MAIN CHAT */
     #main {
       flex: 1;
       display: flex;
       flex-direction: column;
-      background: var(--bg-secondary);
+      background: var(--chat-bg);
     }
 
     #chat-header {
       padding: 12px 20px;
       border-bottom: 1px solid var(--border);
       font-weight: 500;
-      font-size: 1.1rem;
-      background: rgba(15,15,17,0.8);
+      font-size: 1.05rem;
+      background: rgba(15,15,17,0.85);
       backdrop-filter: blur(12px);
       position: relative;
+      z-index: 10;
     }
 
     #menu-toggle {
@@ -128,9 +120,9 @@
       left: 16px;
       top: 50%;
       transform: translateY(-50%);
-      font-size: 1.6rem;
+      font-size: 1.5rem;
       cursor: pointer;
-      color: var(--text-secondary);
+      color: var(--text-muted);
     }
 
     #chat {
@@ -139,43 +131,42 @@
       padding: 32px 24px;
       display: flex;
       flex-direction: column;
-      gap: 28px;
-      max-width: 920px;
+      gap: 32px;
+      max-width: 940px;
       margin: 0 auto;
       width: 100%;
     }
 
     .msg {
-      max-width: 78%;
-      padding: 14px 18px;
-      border-radius: 18px;
-      line-height: 1.58;
+      max-width: 75%;
+      padding: 14px 20px;
+      border-radius: 20px;
+      line-height: 1.6;
       font-size: 15.5px;
       white-space: pre-wrap;
       word-break: break-word;
-      box-shadow: var(--shadow);
-      animation: fadeIn 0.3s ease-out;
+      animation: fadeIn 0.4s ease;
     }
 
     .user {
       align-self: flex-end;
-      background: var(--message-user);
+      background: var(--msg-user);
       color: white;
     }
 
     .bot {
       align-self: flex-start;
-      background: var(--message-bot);
+      background: var(--msg-bot);
       border: 1px solid var(--border);
     }
 
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(12px); }
-      to   { opacity: 1; transform: translateY(0); }
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     pre {
-      background: #111113;
+      background: #1e1e1e;
       padding: 16px;
       border-radius: 12px;
       overflow-x: auto;
@@ -183,16 +174,16 @@
     }
 
     .mermaid {
-      background: #111113;
+      background: #1e1e1e;
       padding: 20px;
       border-radius: 12px;
     }
 
-    /* ──────────────── INPUT ──────────────── */
+    /* INPUT – très proche ChatGPT */
     #input-area {
-      padding: 16px 24px;
+      padding: 16px 24px 24px;
+      background: var(--chat-bg);
       border-top: 1px solid var(--border);
-      background: var(--bg-secondary);
     }
 
     #input-wrapper {
@@ -200,11 +191,11 @@
       align-items: center;
       gap: 12px;
       background: var(--input-bg);
-      border: 1px solid var(--border);
+      border: 1px solid var(--input-border);
       border-radius: 16px;
       padding: 12px 18px;
-      backdrop-filter: blur(10px);
-      box-shadow: 0 4px 30px rgba(0,0,0,0.3);
+      backdrop-filter: blur(8px);
+      box-shadow: 0 4px 30px rgba(0,0,0,0.4);
     }
 
     #input {
@@ -215,7 +206,7 @@
       font-size: 16px;
       resize: none;
       min-height: 24px;
-      max-height: 180px;
+      max-height: 160px;
       line-height: 1.5;
       outline: none;
     }
@@ -223,7 +214,7 @@
     #files { display: none; }
     #attach-btn {
       cursor: pointer;
-      color: var(--text-secondary);
+      color: var(--text-muted);
       font-size: 1.4rem;
       padding: 8px;
     }
@@ -233,52 +224,42 @@
       color: white;
       border: none;
       border-radius: 50%;
-      width: 44px;
-      height: 44px;
+      width: 40px;
+      height: 40px;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
       transition: background 0.2s;
     }
-    #send-btn:hover {
-      background: #2563eb;
-    }
+    #send-btn:hover { background: #0e8c6d; }
 
     .thinking {
       align-self: flex-start;
-      color: var(--text-secondary);
+      color: var(--text-muted);
       font-style: italic;
-      padding: 14px 18px;
-      animation: pulse 1.8s infinite;
+      padding: 14px 20px;
+      animation: pulse 1.6s infinite;
     }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 0.6; }
-      50%      { opacity: 1; }
+    .thinking span {
+      animation: dots 1.4s steps(5, end) infinite;
     }
+    @keyframes pulse { 0%,100% { opacity: 0.7; } 50% { opacity: 1; } }
+    @keyframes dots { 0%,20% { content: "."; } 40% { content: ".."; } 60% { content: "..."; } }
 
     /* Mobile */
     @media (max-width: 768px) {
       #sidebar {
         position: fixed;
-        left: 0; top: 0; bottom: 0;
-        transform: translateX(-100%);
-        width: 82%;
+        inset: 0 0 0 -100%;
+        width: 80%;
         z-index: 200;
+        transition: transform 0.3s ease;
       }
-      #sidebar.open {
-        transform: translateX(0);
-      }
-      #chat-header {
-        padding-left: 60px;
-      }
-      #menu-toggle {
-        display: block;
-      }
-      #chat {
-        padding: 20px 16px;
-      }
+      #sidebar.open { transform: translateX(100%); }
+      #chat-header { padding-left: 60px; }
+      #menu-toggle { display: block; }
+      #chat { padding: 20px 16px; }
     }
   </style>
 </head>
@@ -302,13 +283,16 @@
       <div id="input-wrapper">
         <label for="files" id="attach-btn">📎</label>
         <input type="file" id="files" multiple />
-        <textarea id="input" rows="1" placeholder="Envoyer un message..."></textarea>
+        <textarea id="input" rows="1" placeholder="Envoyer un message à RokyGPT..."></textarea>
         <button id="send-btn">➜</button>
       </div>
     </div>
   </main>
 
   <script>
+    // Ton script JavaScript reste quasi identique – juste quelques ajustements mineurs pour compatibilité
+    // (le reste est inchangé par rapport à ta dernière version corrigée)
+
     mermaid.initialize({ startOnLoad: true, theme: 'dark' });
 
     let currentConvId = localStorage.getItem('currentConvId') || Date.now().toString();
@@ -346,7 +330,7 @@
       renderConversations();
 
       const conv = conversations[id];
-      document.getElementById("current-title").textContent = conv.title;
+      document.getElementById("current-title").textContent = conv.title || "RokyGPT";
 
       const chat = document.getElementById("chat");
       chat.innerHTML = "";
@@ -491,7 +475,7 @@
         const fileDiv = document.createElement("div");
         fileDiv.style.marginTop = "10px";
         fileDiv.style.fontSize = "0.9rem";
-        fileDiv.style.color = "var(--text-secondary)";
+        fileDiv.style.color = "var(--text-muted)";
         fileDiv.innerHTML = files.map(f => `📎 ${f.name}`).join(" • ");
         div.appendChild(fileDiv);
       }
@@ -502,7 +486,6 @@
 
     function addMessage(text, type, files = []) {
       renderMessageToUI(text, type, files);
-
       conversations[currentConvId].messages.push({
         role: type === "user" ? "user" : "assistant",
         content: text,
