@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>RokyGPT Pro</title>
+  <title>RokyGPT</title>
 
   <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked@14/marked.min.js"></script>
@@ -12,26 +12,35 @@
 
   <style>
     :root {
-      --bg: #0a0a0f;
-      --sidebar-bg: #101015;
-      --chat-bg: #0c0c12;
-      --msg-user: #1a2b44;
-      --msg-bot: #17171f;
-      --accent: #5a7cff;
-      --text: #d4d4e0;
-      --text-light: #8a8aa3;
-      --border: #1f1f2a;
-      --hover: #1e1e2e;
+      --bg-primary: #0f0f11;
+      --bg-secondary: #111113;
+      --sidebar-bg: #0a0a0c;
+      --message-user: #1d4ed8;      /* bleu ChatGPT */
+      --message-bot: #1e1e1f;
+      --text-primary: #e5e7eb;
+      --text-secondary: #9ca3af;
+      --border: #1f2937;
+      --accent: #3b82f6;
+      --input-bg: rgba(31, 41, 55, 0.6);
+      --shadow: 0 4px 30px rgba(0,0,0,0.4);
     }
-    * { margin:0; padding:0; box-sizing:border-box; }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
     body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       height: 100vh;
       display: flex;
       overflow: hidden;
     }
+
+    /* ──────────────── SIDEBAR ──────────────── */
     #sidebar {
       width: 260px;
       background: var(--sidebar-bg);
@@ -39,166 +48,238 @@
       display: flex;
       flex-direction: column;
       transition: transform 0.3s ease;
-      z-index: 100;
     }
+
     #sidebar-header {
       padding: 16px;
-      border-bottom: 1px solid var(--border);
+      font-size: 1.25rem;
       font-weight: 600;
-      font-size: 1.2rem;
-      color: var(--text);
+      color: white;
+      border-bottom: 1px solid var(--border);
     }
+
     #new-chat {
-      margin: 16px 16px 8px;
-      padding: 10px;
+      margin: 16px;
+      padding: 10px 16px;
       background: var(--accent);
       color: white;
       border: none;
-      border-radius: 10px;
+      border-radius: 12px;
       cursor: pointer;
+      font-size: 0.95rem;
       font-weight: 500;
+      transition: background 0.2s;
     }
-    #new-chat:hover { opacity: 0.9; }
+    #new-chat:hover {
+      background: #2563eb;
+    }
+
     #conversations {
       flex: 1;
       overflow-y: auto;
       padding: 8px 0;
     }
+
     .conv-item {
-      padding: 12px 16px;
+      padding: 12px 20px;
       cursor: pointer;
-      color: var(--text-light);
-      border-radius: 8px;
-      margin: 4px 12px;
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+      transition: all 0.15s;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      transition: all 0.15s;
     }
-    .conv-item:hover { background: var(--hover); color: var(--text); }
+    .conv-item:hover,
     .conv-item.active {
-      background: rgba(90,124,255,0.15);
+      background: rgba(59,130,246,0.1);
       color: white;
-      font-weight: 500;
     }
     .conv-item .delete-btn {
       opacity: 0;
-      color: #ff6b6b;
-      font-size: 0.9rem;
-      cursor: pointer;
+      color: #ef4444;
+      font-size: 1rem;
     }
-    .conv-item:hover .delete-btn { opacity: 0.7; }
+    .conv-item:hover .delete-btn {
+      opacity: 0.8;
+    }
+
+    /* ──────────────── MAIN ──────────────── */
     #main {
       flex: 1;
       display: flex;
       flex-direction: column;
-      background: var(--chat-bg);
+      background: var(--bg-secondary);
     }
+
     #chat-header {
       padding: 12px 20px;
       border-bottom: 1px solid var(--border);
       font-weight: 500;
-      background: rgba(12,12,18,0.7);
-      backdrop-filter: blur(10px);
+      font-size: 1.1rem;
+      background: rgba(15,15,17,0.8);
+      backdrop-filter: blur(12px);
+      position: relative;
     }
+
+    #menu-toggle {
+      display: none;
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 1.6rem;
+      cursor: pointer;
+      color: var(--text-secondary);
+    }
+
     #chat {
       flex: 1;
       overflow-y: auto;
-      padding: 24px;
+      padding: 32px 24px;
       display: flex;
       flex-direction: column;
-      gap: 20px;
-      max-width: 900px;
+      gap: 28px;
+      max-width: 920px;
       margin: 0 auto;
       width: 100%;
     }
+
     .msg {
-      max-width: 82%;
-      padding: 13px 18px;
-      border-radius: 14px;
-      line-height: 1.55;
-      font-size: 15.2px;
+      max-width: 78%;
+      padding: 14px 18px;
+      border-radius: 18px;
+      line-height: 1.58;
+      font-size: 15.5px;
       white-space: pre-wrap;
       word-break: break-word;
+      box-shadow: var(--shadow);
+      animation: fadeIn 0.3s ease-out;
     }
-    .user { align-self: flex-end; background: var(--msg-user); color: #e0e7ff; }
-    .bot { align-self: flex-start; background: var(--msg-bot); border: 1px solid var(--border); }
-    .msg img { max-width: 100%; border-radius: 12px; margin-top: 10px; }
-    pre { background:#14141e; padding:16px; border-radius:12px; overflow-x:auto; margin:12px 0; }
-    code { font-family: 'Consolas', monospace; }
-    .mermaid { background:#14141e; padding:18px; border-radius:12px; }
+
+    .user {
+      align-self: flex-end;
+      background: var(--message-user);
+      color: white;
+    }
+
+    .bot {
+      align-self: flex-start;
+      background: var(--message-bot);
+      border: 1px solid var(--border);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    pre {
+      background: #111113;
+      padding: 16px;
+      border-radius: 12px;
+      overflow-x: auto;
+      margin: 12px 0;
+    }
+
+    .mermaid {
+      background: #111113;
+      padding: 20px;
+      border-radius: 12px;
+    }
+
+    /* ──────────────── INPUT ──────────────── */
     #input-area {
       padding: 16px 24px;
       border-top: 1px solid var(--border);
-      background: var(--chat-bg);
+      background: var(--bg-secondary);
     }
+
     #input-wrapper {
       display: flex;
       align-items: center;
-      gap: 14px;
-      background: #14141e;
+      gap: 12px;
+      background: var(--input-bg);
       border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 10px 18px;
+      border-radius: 16px;
+      padding: 12px 18px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 4px 30px rgba(0,0,0,0.3);
     }
+
     #input {
       flex: 1;
       background: transparent;
       border: none;
-      color: var(--text);
+      color: white;
       font-size: 16px;
       resize: none;
       min-height: 24px;
       max-height: 180px;
-      line-height: 1.45;
+      line-height: 1.5;
       outline: none;
     }
+
     #files { display: none; }
     #attach-btn {
       cursor: pointer;
-      color: var(--text-light);
+      color: var(--text-secondary);
       font-size: 1.4rem;
+      padding: 8px;
     }
+
     #send-btn {
       background: var(--accent);
       color: white;
       border: none;
       border-radius: 50%;
-      width: 42px;
-      height: 42px;
+      width: 44px;
+      height: 44px;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      font-size: 1.1rem;
+      transition: background 0.2s;
     }
-    #send-btn:hover { background: #4a68e0; }
+    #send-btn:hover {
+      background: #2563eb;
+    }
+
     .thinking {
       align-self: flex-start;
-      color: var(--text-light);
+      color: var(--text-secondary);
       font-style: italic;
-      padding: 12px 18px;
+      padding: 14px 18px;
+      animation: pulse 1.8s infinite;
     }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.6; }
+      50%      { opacity: 1; }
+    }
+
+    /* Mobile */
     @media (max-width: 768px) {
       #sidebar {
         position: fixed;
         left: 0; top: 0; bottom: 0;
         transform: translateX(-100%);
-        width: 80%;
+        width: 82%;
+        z-index: 200;
       }
-      #sidebar.open { transform: translateX(0); }
-      #chat-header { padding-left: 60px; position: relative; }
+      #sidebar.open {
+        transform: translateX(0);
+      }
+      #chat-header {
+        padding-left: 60px;
+      }
       #menu-toggle {
         display: block;
-        position: absolute;
-        left: 16px; top: 50%;
-        transform: translateY(-50%);
-        font-size: 1.5rem;
-        cursor: pointer;
-        color: var(--text-light);
+      }
+      #chat {
+        padding: 20px 16px;
       }
     }
-    #menu-toggle { display: none; }
   </style>
 </head>
 <body>
@@ -212,7 +293,7 @@
   <main id="main">
     <div id="chat-header">
       <div id="menu-toggle">☰</div>
-      <span id="current-title">RokyGPT – Nouvelle conversation</span>
+      <span id="current-title">RokyGPT</span>
     </div>
 
     <div id="chat"></div>
@@ -221,8 +302,8 @@
       <div id="input-wrapper">
         <label for="files" id="attach-btn">📎</label>
         <input type="file" id="files" multiple />
-        <textarea id="input" rows="1" placeholder="Message à RokyGPT..."></textarea>
-        <button id="send-btn">→</button>
+        <textarea id="input" rows="1" placeholder="Envoyer un message..."></textarea>
+        <button id="send-btn">➜</button>
       </div>
     </div>
   </main>
@@ -230,19 +311,13 @@
   <script>
     mermaid.initialize({ startOnLoad: true, theme: 'dark' });
 
-    // ─── Gestion multi-conversations ───
     let currentConvId = localStorage.getItem('currentConvId') || Date.now().toString();
     let conversations = JSON.parse(localStorage.getItem('rokyConversations') || '{}');
+    let hasSyncedThisConv = false;
 
     if (!conversations[currentConvId]) {
-      conversations[currentConvId] = {
-        id: currentConvId,
-        title: "Nouvelle conversation",
-        messages: []
-      };
+      conversations[currentConvId] = { id: currentConvId, title: "Nouvelle conversation", messages: [] };
     }
-
-    let hasSyncedThisConv = false; 
 
     function saveConversations() {
       localStorage.setItem('rokyConversations', JSON.stringify(conversations));
@@ -264,10 +339,9 @@
       });
     }
 
-    // CORRECTION : loadConversation appelle renderMessageToUI (sans push)
     function loadConversation(id) {
       currentConvId = id;
-      hasSyncedThisConv = false; 
+      hasSyncedThisConv = false;
       saveConversations();
       renderConversations();
 
@@ -282,14 +356,12 @@
       });
 
       if (conv.messages.length === 0) {
-        renderMessageToUI("Salut ! Je suis RokyGPT. En quoi puis-je t'aider aujourd'hui ?", "bot");
+        renderMessageToUI("Salut ! Je suis RokyGPT, comment puis-je t’aider ?", "bot");
       }
     }
 
     async function syncOnceIfNeeded() {
-      if (hasSyncedThisConv || !conversations[currentConvId]?.messages?.length) {
-        return;
-      }
+      if (hasSyncedThisConv || !conversations[currentConvId]?.messages?.length) return;
 
       try {
         const res = await fetch("/restore", {
@@ -297,16 +369,10 @@
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             userId: currentConvId,
-            messages: conversations[currentConvId].messages.map(m => ({
-              role: m.role,
-              content: m.content
-            }))
+            messages: conversations[currentConvId].messages.map(m => ({ role: m.role, content: m.content }))
           })
         });
-
-        if (res.ok) {
-          hasSyncedThisConv = true;
-        }
+        if (res.ok) hasSyncedThisConv = true;
       } catch (err) {
         console.error("Erreur sync :", err);
       }
@@ -314,11 +380,7 @@
 
     function createNewConversation() {
       const id = Date.now().toString();
-      conversations[id] = {
-        id,
-        title: "Nouvelle conversation",
-        messages: []
-      };
+      conversations[id] = { id, title: "Nouvelle conversation", messages: [] };
       currentConvId = id;
       hasSyncedThisConv = false;
       saveConversations();
@@ -328,7 +390,7 @@
 
     function deleteConv(id) {
       if (Object.keys(conversations).length <= 1) {
-        alert("Tu ne peux pas supprimer la dernière conversation !");
+        alert("Impossible de supprimer la dernière conversation.");
         return;
       }
       if (confirm("Supprimer cette conversation ?")) {
@@ -346,15 +408,14 @@
     function updateTitleIfNeeded(text) {
       const conv = conversations[currentConvId];
       if (conv.title === "Nouvelle conversation" && text.trim()) {
-        const firstWords = text.trim().split(/\s+/).slice(0, 5).join(" ").replace(/[^\w\s]/gi, '');
-        conv.title = firstWords || "Conversation sans titre";
+        const firstWords = text.trim().split(/\s+/).slice(0, 6).join(" ").replace(/[^\w\s]/gi, '');
+        conv.title = firstWords || "Conversation";
         saveConversations();
         renderConversations();
         document.getElementById("current-title").textContent = conv.title;
       }
     }
 
-    // ─── Chat logic ───
     const chat = document.getElementById("chat");
     const input = document.getElementById("input");
     const filesInput = document.getElementById("files");
@@ -376,7 +437,7 @@
 
       const thinking = document.createElement("div");
       thinking.className = "thinking";
-      thinking.textContent = "RokyGPT réfléchit...";
+      thinking.innerHTML = "RokyGPT réfléchit<span>.</span><span>.</span><span>.</span>";
       chat.appendChild(thinking);
       chat.scrollTop = chat.scrollHeight;
 
@@ -391,7 +452,7 @@
 
       try {
         const res = await fetch("/chat", { method: "POST", body: formData });
-        if (!res.ok) throw new Error("Erreur HTTP " + res.status);
+        if (!res.ok) throw new Error("HTTP " + res.status);
         const data = await res.json();
 
         chat.removeChild(thinking);
@@ -403,10 +464,10 @@
       }
     }
 
-    // CORRECTION : renderMessageToUI s'occupe de l'affichage pur
     function renderMessageToUI(text, type, files = []) {
       const div = document.createElement("div");
       div.className = `msg ${type}`;
+
       let rendered = text;
       try {
         if (text.includes("```mermaid")) {
@@ -419,6 +480,7 @@
       } catch (e) {
         rendered = text;
       }
+
       div.innerHTML = rendered;
 
       div.querySelectorAll("pre code").forEach(el => {
@@ -428,8 +490,8 @@
       if (files.length > 0 && type === "user") {
         const fileDiv = document.createElement("div");
         fileDiv.style.marginTop = "10px";
-        fileDiv.style.fontSize = "0.92rem";
-        fileDiv.style.color = "var(--text-light)";
+        fileDiv.style.fontSize = "0.9rem";
+        fileDiv.style.color = "var(--text-secondary)";
         fileDiv.innerHTML = files.map(f => `📎 ${f.name}`).join(" • ");
         div.appendChild(fileDiv);
       }
@@ -438,11 +500,9 @@
       chat.scrollTop = chat.scrollHeight;
     }
 
-    // CORRECTION : addMessage appelle render + push une seule fois
     function addMessage(text, type, files = []) {
       renderMessageToUI(text, type, files);
 
-      // On enregistre seulement ici, lors de la création d'un NOUVEAU message
       conversations[currentConvId].messages.push({
         role: type === "user" ? "user" : "assistant",
         content: text,
