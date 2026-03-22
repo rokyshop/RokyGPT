@@ -34,6 +34,7 @@ Tools disponibles :
 - "Calcul" : pour effectuer un calcul mathématique. input = expression mathématique (ex: "23*47", "Math.sqrt(144)", "2**10")
 - "CodeJS" : pour exécuter du code JavaScript simple et sécurisé. input = le code JS à exécuter (retourner une valeur avec return ou console.log)
 - "Mermaid" : pour générer un diagramme Mermaid. input = le code Mermaid complet (ex: "graph TD; A-->B")
+- "Search" : pour rechercher des informations récentes sur le web via DuckDuckGo. input = la requête de recherche en français ou anglais
 
 Si aucun tool n'est nécessaire, réponds normalement en texte ou Markdown.
 
@@ -42,6 +43,8 @@ Exemples :
 - "Calcule 23 * 47" → {"tool":"Calcul","input":"23*47"}
 - "Fais un diagramme de A vers B vers C" → {"tool":"Mermaid","input":"graph TD\\n  A-->B\\n  B-->C"}
 - "Exécute ce code JS : [1,2,3].map(x=>x*2)" → {"tool":"CodeJS","input":"return [1,2,3].map(x=>x*2)"}
+- "Cherche des infos sur Node.js" → {"tool":"Search","input":"Node.js"}
+- "Quelles sont les dernières news sur l'IA ?" → {"tool":"Search","input":"latest AI news 2025"}
 
 Ne retourne JAMAIS de JSON enveloppé dans du markdown. Seulement du JSON brut ou du texte.`;
 
@@ -196,6 +199,9 @@ function detectAndRunTool(rawReply) {
       mermaidCode = r.code;
       break;
     }
+    case "Search":
+      // La recherche est async — on signale au caller de la gérer séparément
+      return { async: true, query: input, explanation };
     default:
       return null; // tool inconnu, on laisse passer comme texte normal
   }
@@ -277,7 +283,28 @@ app.post("/chat", upload.array("files"), async (req, res) => {
     let finalReply;
     let usedTool = null;
 
-    if (toolResult) {
+    if (toolResult && toolResult.async) {
+      // Tool Search — appel DuckDuckGo interne
+      try {
+        const searchData = await duckSearch(toolResult.query);
+        if (searchData.error) {
+          finalReply = `❌ Recherche échouée : ${searchData.error}`;
+        } else if (!searchData.results.length) {
+          finalReply = `🔍 Aucun résultat trouvé pour **"${toolResult.query}"**.`;
+        } else {
+          const lines = searchData.results.map((r, i) =>
+            `${i + 1}. **[${r.title}](${r.url})**`
+          ).join("\n");
+          finalReply = (toolResult.explanation ? toolResult.explanation + "\n\n" : "")
+            + `🔍 Résultats pour **"${toolResult.query}"** :\n\n${lines}`;
+        }
+      } catch (e) {
+        finalReply = `❌ Erreur lors de la recherche : ${e.message}`;
+      }
+      usedTool = "Search";
+      conversations[userId].push({ role: "assistant", content: finalReply });
+
+    } else if (toolResult) {
       finalReply = toolResult.reply;
       usedTool = toolResult.tool;
       // On stocke le résultat du tool dans l'historique (pas le JSON brut)
@@ -292,6 +319,104 @@ app.post("/chat", upload.array("files"), async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ reply: "Erreur connexion Mistral – réessaie !" });
+  }
+});
+
+// ═══════════════════════════════════════════════════════
+// TOOL : RECHERCHE DUCKDUCKGO
+// ═══════════════════════════════════════════════════════
+
+/**
+ * Aplati récursivement les Topics DuckDuckGo (certains sont imbriqués sous Topics[].Topics[])
+ * et renvoie un tableau plat de { title, url }.
+ */
+function flattenTopics(topics) {
+  const results = [];
+  for (const item of topics) {
+    if (item.Topics && Array.isArray(item.Topics)) {
+      // Sous-groupe (ex: "Official site", "Wikipedia", etc.)
+      results.push(...flattenTopics(item.Topics));
+    } else if (item.FirstURL && item.Text) {
+      results.push({
+        title: item.Text.replace(/<[^>]+>/g, "").trim(), // supprime éventuelles balises HTML
+        url:   item.FirstURL
+      });
+    }
+  }
+  return results;
+}
+
+/**
+ * Appelle l'API DuckDuckGo et retourne { results: [...] } ou { error: "..." }
+ */
+async function duckSearch(query) {
+  const encoded = encodeURIComponent(query);
+  const url = `https://api.duckduckgo.com/?q=${encoded}&format=json&no_redirect=1&no_html=1&skip_disambig=1`;
+
+  const response = await fetch(url, {
+    headers: { "Accept-Language": "fr-FR,fr;q=0.9,en;q=0.8" }
+  });
+
+  if (!response.ok) {
+    throw new Error(`DuckDuckGo HTTP ${response.status}`);
+  }
+
+  const data = await response.json();
+
+  // Collecte toutes les sources disponibles dans l'API
+  let raw = [];
+
+  // 1. RelatedTopics (principale source de résultats)
+  if (Array.isArray(data.RelatedTopics)) {
+    raw.push(...flattenTopics(data.RelatedTopics));
+  }
+
+  // 2. Results (liens directs si présents)
+  if (Array.isArray(data.Results)) {
+    for (const r of data.Results) {
+      if (r.FirstURL && r.Text) {
+        raw.push({ title: r.Text.replace(/<[^>]+>/g, "").trim(), url: r.FirstURL });
+      }
+    }
+  }
+
+  // 3. AbstractURL (résumé Wikipedia / source officielle)
+  if (data.AbstractURL && data.AbstractText) {
+    raw.unshift({ title: data.Heading || data.AbstractText.slice(0, 80), url: data.AbstractURL });
+  }
+
+  // Déduplication par URL + limite à 5
+  const seen = new Set();
+  const results = [];
+  for (const item of raw) {
+    if (item.url && !seen.has(item.url) && item.title) {
+      seen.add(item.url);
+      results.push({ title: item.title.slice(0, 120), url: item.url });
+      if (results.length >= 5) break;
+    }
+  }
+
+  return { results };
+}
+
+// ── Route POST /duck-search ──────────────────────────────
+app.post("/duck-search", async (req, res) => {
+  const { query } = req.body;
+
+  if (!query || typeof query !== "string" || query.trim().length === 0) {
+    return res.status(400).json({ error: "Paramètre 'query' manquant ou vide." });
+  }
+
+  const q = query.trim();
+  console.log(`[duck-search] Requête reçue : "${q}"`);
+
+  try {
+    const data = await duckSearch(q);
+    console.log(`[duck-search] "${q}" → ${data.results.length} résultat(s) retourné(s)`);
+    res.json(data);
+  } catch (err) {
+    console.error(`[duck-search] Erreur pour "${q}" :`, err.message);
+    res.status(500).json({ error: `Erreur lors de la recherche : ${err.message}` });
   }
 });
 
