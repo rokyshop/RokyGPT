@@ -323,80 +323,148 @@ app.post("/chat", upload.array("files"), async (req, res) => {
 });
 
 // ═══════════════════════════════════════════════════════
-// TOOL : RECHERCHE DUCKDUCKGO
+// TOOL : RECHERCHE WEB
+// ═══════════════════════════════════════════════════════
+// Stratégie en 2 étapes :
+//   1. Scraping HTML de html.duckduckgo.com  (vrais résultats de recherche web)
+//   2. Fallback : API JSON de api.duckduckgo.com (instant answers / Wikipedia)
+// L'API JSON ne renvoie rien pour les actualités — c'est la cause du bug.
+// Le scraping HTML lui couvre toutes les requêtes comme un vrai moteur.
 // ═══════════════════════════════════════════════════════
 
 /**
- * Aplati récursivement les Topics DuckDuckGo (certains sont imbriqués sous Topics[].Topics[])
- * et renvoie un tableau plat de { title, url }.
+ * Extrait les résultats depuis la page HTML de DuckDuckGo.
+ * DDG HTML renvoie des balises <a class="result__a"> avec les titres
+ * et des <a class="result__url"> ou l'attribut href avec l'URL réelle.
+ *
+ * On parse avec des regex légères — pas besoin de cheerio.
  */
-function flattenTopics(topics) {
+async function duckSearchHTML(query) {
+  const encoded = encodeURIComponent(query);
+  const url = `https://html.duckduckgo.com/html/?q=${encoded}&kl=fr-fr`;
+
+  const response = await fetch(url, {
+    headers: {
+      // User-Agent réaliste pour éviter les blocages
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+      "Accept-Language": "fr-FR,fr;q=0.9,en;q=0.8",
+      "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+    }
+  });
+
+  if (!response.ok) throw new Error(`DDG HTML HTTP ${response.status}`);
+
+  const html = await response.text();
+
   const results = [];
-  for (const item of topics) {
-    if (item.Topics && Array.isArray(item.Topics)) {
-      // Sous-groupe (ex: "Official site", "Wikipedia", etc.)
-      results.push(...flattenTopics(item.Topics));
-    } else if (item.FirstURL && item.Text) {
-      results.push({
-        title: item.Text.replace(/<[^>]+>/g, "").trim(), // supprime éventuelles balises HTML
-        url:   item.FirstURL
-      });
+  const seen = new Set();
+
+  // Pattern 1 : liens de résultat principaux
+  // <a rel="nofollow" class="result__a" href="//duckduckgo.com/l/?uddg=...">Titre</a>
+  const linkRe = /class="result__a"[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/gi;
+  let m;
+  while ((m = linkRe.exec(html)) !== null && results.length < 5) {
+    let href = m[1];
+    const rawTitle = m[2].replace(/<[^>]+>/g, "").replace(/&amp;/g,"&").replace(/&lt;/g,"<").replace(/&gt;/g,">").replace(/&#x27;/g,"'").replace(/&quot;/g,'"').trim();
+    if (!rawTitle || rawTitle.length < 3) continue;
+
+    // DDG HTML encode les URLs via un redirect /l/?uddg=<encodedURL>
+    const uddgMatch = href.match(/uddg=([^&]+)/);
+    if (uddgMatch) {
+      try { href = decodeURIComponent(uddgMatch[1]); } catch {}
+    } else if (href.startsWith("//")) {
+      href = "https:" + href;
+    }
+
+    // Filtrer les liens internes DDG
+    if (!href.startsWith("http") || href.includes("duckduckgo.com")) continue;
+    if (seen.has(href)) continue;
+    seen.add(href);
+
+    results.push({ title: rawTitle.slice(0, 120), url: href });
+  }
+
+  // Pattern 2 (fallback si Pattern 1 vide) : href directs dans les résultats
+  if (results.length === 0) {
+    const re2 = /<a[^>]+href="(https?:\/\/(?!duckduckgo)[^"]+)"[^>]*class="[^"]*result[^"]*"[^>]*>([\s\S]*?)<\/a>/gi;
+    while ((m = re2.exec(html)) !== null && results.length < 5) {
+      const href = m[1];
+      const rawTitle = m[2].replace(/<[^>]+>/g, "").trim();
+      if (!rawTitle || rawTitle.length < 3 || seen.has(href)) continue;
+      seen.add(href);
+      results.push({ title: rawTitle.slice(0, 120), url: href });
     }
   }
+
   return results;
 }
 
 /**
- * Appelle l'API DuckDuckGo et retourne { results: [...] } ou { error: "..." }
+ * Fallback : API JSON DuckDuckGo (instant answers / Wikipedia uniquement).
+ * Fonctionne bien pour les entités connues, pas pour l'actualité.
  */
-async function duckSearch(query) {
+async function duckSearchJSON(query) {
   const encoded = encodeURIComponent(query);
   const url = `https://api.duckduckgo.com/?q=${encoded}&format=json&no_redirect=1&no_html=1&skip_disambig=1`;
 
   const response = await fetch(url, {
-    headers: { "Accept-Language": "fr-FR,fr;q=0.9,en;q=0.8" }
+    headers: { "User-Agent": "RokyGPT/1.0", "Accept-Language": "fr-FR,fr;q=0.9" }
   });
-
-  if (!response.ok) {
-    throw new Error(`DuckDuckGo HTTP ${response.status}`);
-  }
+  if (!response.ok) return [];
 
   const data = await response.json();
+  const raw = [];
 
-  // Collecte toutes les sources disponibles dans l'API
-  let raw = [];
-
-  // 1. RelatedTopics (principale source de résultats)
-  if (Array.isArray(data.RelatedTopics)) {
-    raw.push(...flattenTopics(data.RelatedTopics));
+  if (data.AbstractURL && data.AbstractText) {
+    raw.push({ title: (data.Heading || data.AbstractText).slice(0, 120), url: data.AbstractURL });
   }
 
-  // 2. Results (liens directs si présents)
-  if (Array.isArray(data.Results)) {
-    for (const r of data.Results) {
-      if (r.FirstURL && r.Text) {
-        raw.push({ title: r.Text.replace(/<[^>]+>/g, "").trim(), url: r.FirstURL });
+  const flattenTopics = (topics) => {
+    for (const item of topics) {
+      if (item.Topics) flattenTopics(item.Topics);
+      else if (item.FirstURL && item.Text) {
+        raw.push({ title: item.Text.replace(/<[^>]+>/g,"").slice(0,120), url: item.FirstURL });
       }
     }
+  };
+  if (Array.isArray(data.RelatedTopics)) flattenTopics(data.RelatedTopics);
+  if (Array.isArray(data.Results)) {
+    data.Results.forEach(r => r.FirstURL && r.Text &&
+      raw.push({ title: r.Text.replace(/<[^>]+>/g,"").slice(0,120), url: r.FirstURL }));
   }
 
-  // 3. AbstractURL (résumé Wikipedia / source officielle)
-  if (data.AbstractURL && data.AbstractText) {
-    raw.unshift({ title: data.Heading || data.AbstractText.slice(0, 80), url: data.AbstractURL });
-  }
-
-  // Déduplication par URL + limite à 5
   const seen = new Set();
-  const results = [];
-  for (const item of raw) {
-    if (item.url && !seen.has(item.url) && item.title) {
-      seen.add(item.url);
-      results.push({ title: item.title.slice(0, 120), url: item.url });
-      if (results.length >= 5) break;
+  return raw.filter(r => {
+    if (!r.url || !r.title || seen.has(r.url)) return false;
+    seen.add(r.url); return true;
+  }).slice(0, 5);
+}
+
+/**
+ * Fonction principale : essaie le HTML d'abord, puis le JSON en fallback.
+ */
+async function duckSearch(query) {
+  let results = [];
+  let method = "html";
+
+  try {
+    results = await duckSearchHTML(query);
+  } catch (e) {
+    console.warn(`[duck-search] HTML scraping échoué (${e.message}), tentative JSON…`);
+    method = "json-fallback";
+  }
+
+  // Si le HTML n'a rien donné, tenter le JSON
+  if (results.length === 0) {
+    try {
+      results = await duckSearchJSON(query);
+      method = results.length ? "json-fallback" : "empty";
+    } catch (e) {
+      console.warn(`[duck-search] JSON fallback aussi échoué : ${e.message}`);
     }
   }
 
-  return { results };
+  return { results, method };
 }
 
 // ── Route POST /duck-search ──────────────────────────────
@@ -412,8 +480,8 @@ app.post("/duck-search", async (req, res) => {
 
   try {
     const data = await duckSearch(q);
-    console.log(`[duck-search] "${q}" → ${data.results.length} résultat(s) retourné(s)`);
-    res.json(data);
+    console.log(`[duck-search] "${q}" → ${data.results.length} résultat(s) [méthode: ${data.method}]`);
+    res.json({ results: data.results });
   } catch (err) {
     console.error(`[duck-search] Erreur pour "${q}" :`, err.message);
     res.status(500).json({ error: `Erreur lors de la recherche : ${err.message}` });
