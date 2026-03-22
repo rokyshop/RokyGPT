@@ -16,6 +16,7 @@
       --inp:#2f2f2f; --acc:#10a37f;
       --btnbg:#fff; --btntxt:#212121;
       --scr:#404040; --codebg:#1a1a1a; --modbg:#1e1e1e; --red:#ef4444;
+      --tool-bg:rgba(16,163,127,.08); --tool-bdr:rgba(16,163,127,.25);
     }
     body.light {
       --bg:#fff; --sb:#f9f9f9; --ubub:#f0f0f0;
@@ -23,6 +24,7 @@
       --bdr:#e5e5e5; --hov:rgba(0,0,0,.04); --act:rgba(0,0,0,.08);
       --inp:#f4f4f4; --btnbg:#0d0d0d; --btntxt:#fff;
       --scr:#d0d0d0; --codebg:#f0f0f0; --modbg:#f9f9f9;
+      --tool-bg:rgba(16,163,127,.06); --tool-bdr:rgba(16,163,127,.2);
     }
     *{margin:0;padding:0;box-sizing:border-box;}
     html,body{height:100%;overflow:hidden;}
@@ -30,12 +32,7 @@
     ::-webkit-scrollbar{width:5px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:var(--scr);border-radius:3px;}
 
     /* ═══ SIDEBAR ═══ */
-    #sidebar{
-      width:260px;min-width:260px;background:var(--sb);
-      display:flex;flex-direction:column;padding:8px;
-      height:100vh;overflow:hidden;
-      transition:transform .25s ease;z-index:200;flex-shrink:0;
-    }
+    #sidebar{width:260px;min-width:260px;background:var(--sb);display:flex;flex-direction:column;padding:8px;height:100vh;overflow:hidden;transition:transform .25s ease;z-index:200;flex-shrink:0;}
     #sb-top{display:flex;align-items:center;gap:4px;padding:4px 2px 8px;}
     .ib{width:36px;height:36px;border-radius:8px;border:none;background:transparent;color:var(--sub);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s,color .15s;flex-shrink:0;}
     .ib:hover{background:var(--hov);color:var(--txt);}
@@ -75,12 +72,19 @@
     /* ═══ CHAT ═══ */
     #chat-cont{flex:1;overflow-y:auto;display:flex;flex-direction:column;}
     #welcome{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;padding:40px 20px;text-align:center;}
-    #welcome h1{font-size:26px;font-weight:600;margin-bottom:28px;}
-    .sugs{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;max-width:540px;width:100%;}
+    #welcome h1{font-size:26px;font-weight:600;margin-bottom:8px;}
+    #welcome p{font-size:14px;color:var(--muted);margin-bottom:28px;}
+    .sugs{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;max-width:560px;width:100%;}
     .sc{padding:13px 14px;border-radius:12px;border:1px solid var(--bdr);background:transparent;color:var(--sub);font-size:14px;text-align:left;cursor:pointer;transition:background .15s;font-family:inherit;}
     .sc:hover{background:var(--hov);color:var(--txt);}
     .sc .si{font-size:17px;margin-bottom:5px;display:block;}
     .sc .st{font-weight:500;color:var(--txt);display:block;margin-bottom:2px;}
+
+    /* Tools quick buttons */
+    .tools-row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:24px;}
+    .tool-chip{padding:6px 12px;border-radius:20px;border:1px solid var(--tool-bdr);background:var(--tool-bg);color:var(--acc);font-size:13px;cursor:pointer;transition:all .15s;font-family:inherit;display:flex;align-items:center;gap:5px;}
+    .tool-chip:hover{background:rgba(16,163,127,.15);border-color:var(--acc);}
+
     #chat{display:flex;flex-direction:column;width:100%;max-width:760px;margin:0 auto;padding:20px 20px 40px;}
     .mg{display:flex;flex-direction:column;padding:12px 0;animation:fi .25s ease;}
     @keyframes fi{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
@@ -91,10 +95,15 @@
     .bico{width:26px;height:26px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
     .bico svg{width:15px;height:15px;}
     .blbl{font-size:14px;font-weight:600;}
+
+    /* Tool badge */
+    .tool-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:10px;background:var(--tool-bg);border:1px solid var(--tool-bdr);color:var(--acc);font-size:11px;font-weight:600;margin-left:8px;vertical-align:middle;}
+
     .mg.bot .bub{font-size:15px;line-height:1.72;width:100%;}
     .mg.bot .bub p{margin:0 0 10px;}.mg.bot .bub p:last-child{margin:0;}
     .mg.bot .bub h1,.mg.bot .bub h2,.mg.bot .bub h3{margin:14px 0 7px;font-weight:600;}
     .mg.bot .bub ul,.mg.bot .bub ol{padding-left:20px;margin:8px 0;}.mg.bot .bub li{margin:4px 0;}
+    .mg.bot .bub strong{font-weight:600;}
     .mg.bot .bub pre{background:var(--codebg);border-radius:10px;overflow:hidden;margin:10px 0;}
     .chdr{display:flex;align-items:center;justify-content:space-between;padding:7px 12px;background:rgba(255,255,255,.05);border-bottom:1px solid rgba(255,255,255,.07);font-size:12px;color:var(--muted);}
     body.light .chdr{background:rgba(0,0,0,.04);border-bottom-color:rgba(0,0,0,.06);}
@@ -104,6 +113,16 @@
     .mg.bot .bub pre code{padding:12px;display:block;font-size:13px;line-height:1.6;overflow-x:auto;}
     .mg.bot .bub code:not(pre code){background:rgba(255,255,255,.1);padding:2px 6px;border-radius:4px;font-size:13px;}
     body.light .mg.bot .bub code:not(pre code){background:rgba(0,0,0,.07);}
+
+    /* Tool result card */
+    .tool-result{background:var(--tool-bg);border:1px solid var(--tool-bdr);border-radius:12px;padding:14px 16px;margin:4px 0;}
+    .tool-result-header{font-size:11px;color:var(--acc);font-weight:600;margin-bottom:8px;display:flex;align-items:center;gap:5px;}
+    .tool-result-body{font-size:15px;color:var(--txt);}
+    .tool-result-body p{margin:0;}
+
+    /* Mermaid wrapper */
+    .mermaid-wrap{background:var(--tool-bg);border:1px solid var(--tool-bdr);border-radius:12px;padding:16px;margin:8px 0;overflow-x:auto;}
+
     .ma{display:flex;gap:3px;margin-top:7px;opacity:0;transition:opacity .15s;}
     .mg:hover .ma{opacity:1;}
     .mab{width:30px;height:30px;border-radius:6px;border:none;background:transparent;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s;}
@@ -134,7 +153,7 @@
     #send-btn svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;}
     #disclaimer{text-align:center;font-size:12px;color:var(--muted);margin-top:9px;}
 
-    /* ═══ OVERLAY + MODALS ═══ */
+    /* ═══ MODALS ═══ */
     .ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:1000;align-items:center;justify-content:center;backdrop-filter:blur(6px);padding:16px;}
     .ov.open{display:flex;}
     .mod{background:var(--modbg);border-radius:16px;padding:28px;width:100%;max-width:440px;border:1px solid var(--bdr);animation:mi .2s ease;max-height:90vh;overflow-y:auto;}
@@ -170,23 +189,27 @@
     .pcard ul{padding-left:16px;font-size:14px;color:var(--sub);line-height:1.8;}
     .cmsg{font-size:15px;color:var(--sub);margin-bottom:20px;line-height:1.5;}
 
-    /* Toast */
+    /* Tools info dans settings */
+    .tools-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0;}
+    .tcard{background:var(--tool-bg);border:1px solid var(--tool-bdr);border-radius:10px;padding:10px 12px;font-size:13px;}
+    .tcard .tname{font-weight:600;color:var(--acc);margin-bottom:3px;}
+    .tcard .tdesc{color:var(--sub);font-size:12px;}
+
     #toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(8px);background:#323232;color:#fff;padding:10px 18px;border-radius:8px;font-size:14px;z-index:9999;opacity:0;transition:opacity .25s,transform .25s;pointer-events:none;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,.4);}
     #toast.on{opacity:1;transform:translateX(-50%) translateY(0);}
-
-    /* Sidebar mobile overlay */
     #sb-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:199;}
     #sb-ov.on{display:block;}
 
-    /* ═══ RESPONSIVE ═══ */
     @media(max-width:768px){
       #sidebar{position:fixed;top:0;left:0;bottom:0;height:100vh;transform:translateX(-100%);}
       #sidebar.open{transform:translateX(0);box-shadow:4px 0 30px rgba(0,0,0,.5);}
       #chat{padding:14px 12px 40px;}
       .sugs{grid-template-columns:1fr 1fr;}
       #welcome h1{font-size:21px;}
+      .tools-row{gap:6px;}
+      .tools-grid{grid-template-columns:1fr;}
     }
-    @media(max-width:420px){.sugs{grid-template-columns:1fr;}}
+    @media(max-width:420px){.sugs{grid-template-columns:1fr;}.tools-row .tool-chip span{display:none;}}
   </style>
 </head>
 <body>
@@ -196,13 +219,13 @@
 <!-- ═══ SIDEBAR ═══ -->
 <aside id="sidebar">
   <div id="sb-top">
-    <button class="ib" onclick="closeSB()" title="Fermer">
+    <button class="ib" onclick="closeSB()">
       <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
     </button>
-    <button class="ib" id="search-btn" onclick="toggleSearch()" title="Rechercher" style="margin-right:auto;">
+    <button class="ib" id="search-btn" onclick="toggleSearch()" style="margin-right:auto;">
       <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
     </button>
-    <button class="ib" onclick="newConv()" title="Nouveau chat">
+    <button class="ib" onclick="newConv()">
       <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
     </button>
   </div>
@@ -222,34 +245,46 @@
 <main id="main">
   <div id="topbar">
     <div id="topbar-l">
-      <button class="tb" id="burger" onclick="openSB()">
+      <button class="tb" onclick="openSB()">
         <svg viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
       </button>
       <button id="model-pill">RokyGPT
         <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
       </button>
     </div>
-    <button class="tb" onclick="newConv()" title="Nouveau chat">
+    <button class="tb" onclick="newConv()">
       <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
     </button>
   </div>
+
   <div id="chat-cont">
     <div id="welcome">
       <h1>Comment puis-je vous aider ?</h1>
+      <p>Posez une question, demandez un calcul, un diagramme ou lancez du code</p>
+
+      <!-- Tools rapides -->
+      <div class="tools-row">
+        <button class="tool-chip" onclick="fill('Quelle heure est-il ?')">📅 <span>Date & heure</span></button>
+        <button class="tool-chip" onclick="fill('Calcule 1024 * 768')">🧮 <span>Calcul</span></button>
+        <button class="tool-chip" onclick="fill('Exécute ce code JS : return [1,2,3,4,5].reduce((a,b)=>a+b,0)')">⚙️ <span>Code JS</span></button>
+        <button class="tool-chip" onclick="fill('Fais un diagramme Mermaid d\'un processus de connexion utilisateur')">📊 <span>Diagramme</span></button>
+      </div>
+
       <div class="sugs">
         <button class="sc" onclick="fill('Explique-moi comment fonctionne l\'IA')"><span class="si">🤖</span><span class="st">Explique l'IA</span>comment ça marche ?</button>
         <button class="sc" onclick="fill('Écris-moi un poème sur la nature')"><span class="si">✍️</span><span class="st">Crée du contenu</span>poème, histoire...</button>
         <button class="sc" onclick="fill('Aide-moi à déboguer mon code Python')"><span class="si">💻</span><span class="st">Code &amp; debug</span>toutes les langues</button>
-        <button class="sc" onclick="fill('Résume-moi les tendances en IA')"><span class="si">📰</span><span class="st">Analyse &amp; recherche</span>résumé, synthèse...</button>
+        <button class="sc" onclick="fill('Explique-moi les réseaux de neurones')"><span class="si">🧠</span><span class="st">Deep Learning</span>neural nets, ML...</button>
       </div>
     </div>
     <div id="chat" style="display:none;"></div>
   </div>
+
   <div id="input-area">
     <div id="input-outer">
       <div id="input-box">
         <div id="fchips"></div>
-        <textarea id="tinput" rows="1" placeholder="Message RokyGPT"></textarea>
+        <textarea id="tinput" rows="1" placeholder="Message RokyGPT — posez une question, demandez un calcul, un diagramme..."></textarea>
         <div id="input-bot">
           <label class="inb" for="files">
             <input type="file" id="files" multiple style="display:none">
@@ -305,6 +340,14 @@
     <div class="srow">
       <div><div class="slbl">Compte connecté</div><div class="sdsc" id="set-user">Non connecté</div></div>
       <button class="mb g" onclick="doLogout()" style="width:auto;padding:7px 14px;font-size:13px;margin:0;">Déconnexion</button>
+    </div>
+    <hr class="mdiv">
+    <div style="font-size:13px;font-weight:600;color:var(--acc);margin-bottom:8px;">⚡ Tools internes actifs</div>
+    <div class="tools-grid">
+      <div class="tcard"><div class="tname">📅 Date & Heure</div><div class="tdesc">Date et heure en temps réel</div></div>
+      <div class="tcard"><div class="tname">🧮 Calcul</div><div class="tdesc">Expressions mathématiques</div></div>
+      <div class="tcard"><div class="tname">⚙️ Code JS</div><div class="tdesc">Exécution JS sécurisée</div></div>
+      <div class="tcard"><div class="tname">📊 Mermaid</div><div class="tdesc">Diagrammes & flowcharts</div></div>
     </div>
     <hr class="mdiv">
     <div class="pcard">
@@ -365,24 +408,21 @@ function toast(msg, ms=2200){
   clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('on'),ms);
 }
 
-// Copy avec fallback mobile complet
 function copyText(text){
-  const doFallback=()=>{
+  const doFb=()=>{
     const ta=document.createElement('textarea');
     ta.value=text;
     Object.assign(ta.style,{position:'fixed',top:'0',left:'0',opacity:'0',fontSize:'16px'});
-    document.body.appendChild(ta);
-    ta.focus(); ta.select();
+    document.body.appendChild(ta); ta.focus(); ta.select();
     try{ document.execCommand('copy'); toast('Copié !'); }
     catch{ toast('Copie impossible'); }
     document.body.removeChild(ta);
   };
   if(navigator.clipboard && typeof navigator.clipboard.writeText==='function'){
-    navigator.clipboard.writeText(text).then(()=>toast('Copié !')).catch(doFallback);
-  } else { doFallback(); }
+    navigator.clipboard.writeText(text).then(()=>toast('Copié !')).catch(doFb);
+  } else { doFb(); }
 }
 
-// Confirm modal — remplace window.confirm()
 let _cr=null;
 function askConfirm(title,msg){
   return new Promise(res=>{
@@ -398,7 +438,6 @@ function closeConf(){
   if(_cr){_cr(false);_cr=null;}
 }
 
-// Close modals on backdrop click
 ['mod-auth','mod-set','mod-sub','mod-conf'].forEach(id=>{
   G(id).addEventListener('click',e=>{ if(e.target===G(id)) G(id).classList.remove('open'); });
 });
@@ -420,7 +459,7 @@ function toggleTheme(){ isLight=!isLight; localStorage.setItem('rky-theme',isLig
 applyTheme();
 
 // ═══════════════════════════════════
-// AUTH — Vrais comptes localStorage
+// AUTH
 // ═══════════════════════════════════
 function getUsers(){ return JSON.parse(localStorage.getItem('rky-users')||'{}'); }
 function saveUsers(u){ localStorage.setItem('rky-users',JSON.stringify(u)); }
@@ -430,7 +469,7 @@ function updateUserUI(){
   const n=curUser||'Invité';
   G('sb-av').textContent=n[0].toUpperCase();
   G('sb-un').textContent=n;
-  if(G('set-user')) G('set-user').textContent=curUser?curUser:'Non connecté';
+  if(G('set-user')) G('set-user').textContent=curUser||'Non connecté';
 }
 updateUserUI();
 
@@ -445,41 +484,38 @@ function switchTab(tab){
 function authErr(m){ G('aerr').textContent=m; G('aerr').classList.add('on'); G('asuc').classList.remove('on'); }
 function authOk(m){ G('asuc').textContent=m; G('asuc').classList.add('on'); G('aerr').classList.remove('on'); }
 
-// Hash simple côté client
 function sh(s){ let h=0; for(let i=0;i<s.length;i++){h=((h<<5)-h)+s.charCodeAt(i);h|=0;} return h.toString(36); }
 
 function doRegister(){
-  const u=G('r-user').value.trim(), e=G('r-email').value.trim(),
-        p=G('r-pass').value, c=G('r-conf').value;
+  const u=G('r-user').value.trim(), e=G('r-email').value.trim(), p=G('r-pass').value, c=G('r-conf').value;
   if(!u) return authErr('Nom d\'utilisateur requis.');
-  if(u.length<3) return authErr('Nom trop court — minimum 3 caractères.');
-  if(!e||!e.includes('@')) return authErr('Adresse email invalide.');
-  if(p.length<6) return authErr('Mot de passe trop court — minimum 6 caractères.');
+  if(u.length<3) return authErr('Minimum 3 caractères pour le nom.');
+  if(!e||!e.includes('@')) return authErr('Email invalide.');
+  if(p.length<6) return authErr('Mot de passe trop court (min. 6 car.).');
   if(p!==c) return authErr('Les mots de passe ne correspondent pas.');
   const users=getUsers();
-  if(users[u.toLowerCase()]) return authErr('Ce nom d\'utilisateur est déjà pris.');
-  if(Object.values(users).some(x=>x.email===e.toLowerCase())) return authErr('Cet email est déjà utilisé.');
+  if(users[u.toLowerCase()]) return authErr('Ce nom est déjà pris.');
+  if(Object.values(users).some(x=>x.email===e.toLowerCase())) return authErr('Email déjà utilisé.');
   users[u.toLowerCase()]={username:u,email:e.toLowerCase(),pw:sh(p),at:Date.now()};
   saveUsers(users);
-  authOk('Compte créé ! Connexion en cours...');
+  authOk('Compte créé ! Connexion...');
   setTimeout(()=>{ startSession(u); closeAuth(); toast('Bienvenue, '+u+' ! 👋'); },1200);
 }
 
 function doLogin(){
   const u=G('l-user').value.trim(), p=G('l-pass').value;
   if(!u||!p) return authErr('Remplis tous les champs.');
-  const users=getUsers(), entry=users[u.toLowerCase()];
-  if(!entry) return authErr('Nom d\'utilisateur introuvable.');
+  const entry=getUsers()[u.toLowerCase()];
+  if(!entry) return authErr('Utilisateur introuvable.');
   if(entry.pw!==sh(p)) return authErr('Mot de passe incorrect.');
   startSession(entry.username);
   closeAuth(); toast('Bienvenue, '+entry.username+' ! 👋');
 }
 
-function startSession(name){ curUser=name; localStorage.setItem('rky-session',name); updateUserUI(); }
+function startSession(n){ curUser=n; localStorage.setItem('rky-session',n); updateUserUI(); }
 function doLogout(){ curUser=null; localStorage.removeItem('rky-session'); updateUserUI(); closeSettings(); toast('Déconnecté'); }
 function closeAuth(){ G('mod-auth').classList.remove('open'); }
 
-// Enter keys
 G('l-user').addEventListener('keydown',e=>{ if(e.key==='Enter') G('l-pass').focus(); });
 G('l-pass').addEventListener('keydown',e=>{ if(e.key==='Enter') doLogin(); });
 G('r-conf').addEventListener('keydown',e=>{ if(e.key==='Enter') doRegister(); });
@@ -487,14 +523,8 @@ G('r-conf').addEventListener('keydown',e=>{ if(e.key==='Enter') doRegister(); })
 // ═══════════════════════════════════
 // SIDEBAR
 // ═══════════════════════════════════
-function openSB(){
-  G('sidebar').classList.add('open');
-  G('sb-ov').classList.add('on');
-}
-function closeSB(){
-  G('sidebar').classList.remove('open');
-  G('sb-ov').classList.remove('on');
-}
+function openSB(){ G('sidebar').classList.add('open'); G('sb-ov').classList.add('on'); }
+function closeSB(){ G('sidebar').classList.remove('open'); G('sb-ov').classList.remove('on'); }
 
 let searchOpen=false;
 function toggleSearch(){
@@ -523,12 +553,11 @@ function goStripe(){ toast('Redirection Stripe... (à configurer)'); closeSub();
 // ═══════════════════════════════════
 // CONVERSATIONS
 // ═══════════════════════════════════
-mermaid.initialize({startOnLoad:true,theme:'dark'});
+mermaid.initialize({ startOnLoad: false, theme: 'dark', securityLevel: 'loose' });
 
 let curId=localStorage.getItem('rky-id')||Date.now().toString();
 let convs=JSON.parse(localStorage.getItem('rky-convs')||'{}');
 let synced=false;
-
 if(!convs[curId]) convs[curId]={id:curId,title:'Nouvelle conversation',messages:[]};
 
 function save(){
@@ -540,15 +569,13 @@ function renderList(){
   const list=G('conv-list'); list.innerHTML='';
   const sorted=Object.values(convs).sort((a,b)=>parseInt(b.id)-parseInt(a.id));
   if(!sorted.length) return;
-  const lbl=document.createElement('div');
-  lbl.className='cgl'; lbl.textContent='Récents'; list.appendChild(lbl);
+  const lbl=document.createElement('div'); lbl.className='cgl'; lbl.textContent='Récents';
+  list.appendChild(lbl);
   sorted.forEach(c=>{
     const item=document.createElement('div');
     item.className='ci'+(c.id===curId?' active':'');
     item.innerHTML=`<span class="ci-title">${escH(c.title)}</span>
-      <button class="ci-del" title="Supprimer">
-        <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-      </button>`;
+      <button class="ci-del"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>`;
     item.querySelector('.ci-del').addEventListener('click',e=>{ e.stopPropagation(); delConv(c.id); });
     item.addEventListener('click',()=>{ loadConv(c.id); closeSB(); });
     list.appendChild(item);
@@ -562,7 +589,7 @@ function loadConv(id){
   if(!c.messages.length){ chat.style.display='none'; wel.style.display='flex'; }
   else{
     chat.style.display='flex'; wel.style.display='none';
-    c.messages.forEach((m,i)=>renderMsg(m.content,m.role==='user'?'user':'bot',[],i));
+    c.messages.forEach((m,i)=>renderMsg(m.content, m.role==='user'?'user':'bot', [], i, m.tool||null));
   }
   G('chat-cont').scrollTop=999999;
 }
@@ -592,7 +619,7 @@ async function delConv(id){
 }
 
 async function confirmClear(){
-  const ok=await askConfirm('Tout effacer','Toutes vos conversations seront définitivement supprimées. Cette action est irréversible.');
+  const ok=await askConfirm('Tout effacer','Toutes vos conversations seront définitivement supprimées.');
   if(!ok) return;
   localStorage.removeItem('rky-convs'); localStorage.removeItem('rky-id'); location.reload();
 }
@@ -606,8 +633,11 @@ function autoTitle(text){
 }
 
 // ═══════════════════════════════════
-// LOGO SVG
+// TOOL ICONS
 // ═══════════════════════════════════
+const TOOL_ICONS = { Date:'📅', Calcul:'🧮', CodeJS:'⚙️', Mermaid:'📊' };
+const TOOL_LABELS = { Date:'Date & Heure', Calcul:'Calcul', CodeJS:'Code JS', Mermaid:'Diagramme' };
+
 function logoSVG(size=15){
   return `<svg viewBox="0 0 41 41" xmlns="http://www.w3.org/2000/svg" fill="black" width="${size}" height="${size}">
     <path d="M37.532 16.87a9.963 9.963 0 0 0-.856-8.184 10.078 10.078 0 0 0-10.855-4.835A9.964 9.964 0 0 0 18.306.5a10.079 10.079 0 0 0-9.614 6.977 9.967 9.967 0 0 0-6.664 4.834 10.08 10.08 0 0 0 1.24 11.817 9.965 9.965 0 0 0 .856 8.185 10.079 10.079 0 0 0 10.855 4.835 9.965 9.965 0 0 0 7.516 3.35 10.078 10.078 0 0 0 9.617-6.981 9.967 9.967 0 0 0 6.663-4.834 10.079 10.079 0 0 0-1.243-11.813zM22.498 37.886a7.474 7.474 0 0 1-4.799-1.735c.061-.033.168-.091.237-.134l7.964-4.6a1.294 1.294 0 0 0 .655-1.134V19.054l3.366 1.944a.12.12 0 0 1 .066.092v9.299a7.505 7.505 0 0 1-7.49 7.496zM6.392 31.006a7.471 7.471 0 0 1-.894-5.023c.06.036.162.099.237.141l7.964 4.6a1.297 1.297 0 0 0 1.308 0l9.724-5.614v3.888a.12.12 0 0 1-.048.103l-8.051 4.649a7.504 7.504 0 0 1-10.24-2.744zM4.297 13.62A7.469 7.469 0 0 1 8.2 10.333c0 .068-.004.19-.004.274v9.201a1.294 1.294 0 0 0 .654 1.132l9.723 5.614-3.366 1.944a.12.12 0 0 1-.114.012L7.044 23.86a7.504 7.504 0 0 1-2.747-10.24zm27.658 6.437l-9.724-5.615 3.367-1.943a.121.121 0 0 1 .114-.012l8.048 4.648a7.498 7.498 0 0 1-1.158 13.528v-9.476a1.293 1.293 0 0 0-.647-1.13zm3.35-5.043c-.059-.037-.162-.099-.236-.141l-7.965-4.6a1.298 1.298 0 0 0-1.308 0l-9.723 5.614v-3.888a.12.12 0 0 1 .048-.103l8.05-4.645a7.497 7.497 0 0 1 11.135 7.763zm-21.063 6.929l-3.367-1.944a.12.12 0 0 1-.065-.092v-9.299a7.497 7.497 0 0 1 12.293-5.756 6.94 6.94 0 0 0-.236.134l-7.965 4.6a1.294 1.294 0 0 0-.654 1.132l-.006 11.225zm1.829-3.943l4.33-2.501 4.332 2.497v4.998l-4.33 2.5-4.332-2.5V18z"/>
@@ -617,15 +647,13 @@ function logoSVG(size=15){
 // ═══════════════════════════════════
 // RENDER MESSAGE
 // ═══════════════════════════════════
-function renderMsg(text, type, files=[], index=-1){
+function renderMsg(text, type, files=[], index=-1, usedTool=null){
   const chat=G('chat');
   const g=document.createElement('div');
   g.className='mg '+type;
 
   if(type==='user'){
-    // Build DOM manually — pas d'onclick inline pour éviter les problèmes de guillemets
-    const bub=document.createElement('div');
-    bub.className='bub';
+    const bub=document.createElement('div'); bub.className='bub';
     try{ bub.innerHTML=marked.parse(text); }catch{ bub.textContent=text; }
     if(files.length){
       const fd=document.createElement('div');
@@ -633,70 +661,49 @@ function renderMsg(text, type, files=[], index=-1){
       fd.textContent=files.map(f=>'📎 '+(f.name||f)).join(' · ');
       bub.appendChild(fd);
     }
-    const ma=document.createElement('div');
-    ma.className='ma';
-    const cpyBtn=document.createElement('button');
-    cpyBtn.className='mab'; cpyBtn.title='Copier';
-    cpyBtn.innerHTML=`<svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`;
-    cpyBtn.addEventListener('click',()=>copyText(text));
-    ma.appendChild(cpyBtn);
+    const ma=document.createElement('div'); ma.className='ma';
+    const cp=document.createElement('button'); cp.className='mab'; cp.title='Copier';
+    cp.innerHTML=`<svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`;
+    cp.addEventListener('click',()=>copyText(text));
+    ma.appendChild(cp);
     g.appendChild(bub); g.appendChild(ma);
-
   } else {
-    // Bot header
+    // Header bot
     const bh=document.createElement('div'); bh.className='bh';
     const bico=document.createElement('div'); bico.className='bico'; bico.innerHTML=logoSVG(15);
     const blbl=document.createElement('span'); blbl.className='blbl'; blbl.textContent='RokyGPT';
+    if(usedTool){
+      const badge=document.createElement('span'); badge.className='tool-badge';
+      badge.textContent=(TOOL_ICONS[usedTool]||'🔧')+' '+(TOOL_LABELS[usedTool]||usedTool);
+      blbl.appendChild(badge);
+    }
     bh.appendChild(bico); bh.appendChild(blbl);
 
     // Bubble
     const bub=document.createElement('div'); bub.className='bub';
-    let rendered=text;
-    try{
-      if(text.includes('```mermaid')){
-        const code=text.split('```mermaid')[1]?.split('```')[0]||'';
-        rendered=`<div class="mermaid">${code.trim()}</div>`;
-        setTimeout(()=>mermaid.init(),200);
-      } else { rendered=marked.parse(text); }
-    }catch{ rendered=escH(text); }
-    bub.innerHTML=rendered;
 
-    // Code block headers
-    bub.querySelectorAll('pre').forEach(pre=>{
-      const code=pre.querySelector('code');
-      const lang=(code?.className||'').replace('language-','')||'code';
-      const codeText=code?.textContent||'';
-      const hdr=document.createElement('div'); hdr.className='chdr';
-      const langSpan=document.createElement('span'); langSpan.textContent=lang;
-      const cpyCode=document.createElement('button'); cpyCode.className='ccpy';
-      cpyCode.innerHTML=`<svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copier`;
-      cpyCode.addEventListener('click',()=>copyText(codeText));
-      hdr.appendChild(langSpan); hdr.appendChild(cpyCode);
-      pre.insertBefore(hdr,pre.firstChild);
-      if(code) try{ Prism.highlightElement(code); }catch(e){}
-    });
+    // Render le contenu — détecte Mermaid et blocs de code
+    renderBubbleContent(bub, text);
 
     // Actions
     const ma=document.createElement('div'); ma.className='ma';
-
-    const cpyBtn=document.createElement('button'); cpyBtn.className='mab'; cpyBtn.title='Copier';
-    cpyBtn.innerHTML=`<svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`;
-    cpyBtn.addEventListener('click',()=>copyText(text));
-
-    ma.appendChild(cpyBtn);
+    const cp=document.createElement('button'); cp.className='mab'; cp.title='Copier';
+    cp.innerHTML=`<svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`;
+    cp.addEventListener('click',()=>copyText(text));
+    ma.appendChild(cp);
 
     if(index>=0){
-      const rgBtn=document.createElement('button'); rgBtn.className='mab'; rgBtn.title='Régénérer';
-      rgBtn.innerHTML=`<svg viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.67"/></svg>`;
-      rgBtn.addEventListener('click',()=>regen(index));
-      ma.appendChild(rgBtn);
+      const rg=document.createElement('button'); rg.className='mab'; rg.title='Régénérer';
+      rg.innerHTML=`<svg viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.67"/></svg>`;
+      rg.addEventListener('click',()=>regen(index));
+      ma.appendChild(rg);
     }
 
-    const upBtn=document.createElement('button'); upBtn.className='mab'; upBtn.title='Bonne réponse';
-    upBtn.innerHTML=`<svg viewBox="0 0 24 24"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"/><path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>`;
-    const dnBtn=document.createElement('button'); dnBtn.className='mab'; dnBtn.title='Mauvaise réponse';
-    dnBtn.innerHTML=`<svg viewBox="0 0 24 24"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3H10z"/><path d="M17 2h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"/></svg>`;
-    ma.appendChild(upBtn); ma.appendChild(dnBtn);
+    const up=document.createElement('button'); up.className='mab'; up.title='Bonne réponse';
+    up.innerHTML=`<svg viewBox="0 0 24 24"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"/><path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>`;
+    const dn=document.createElement('button'); dn.className='mab'; dn.title='Mauvaise réponse';
+    dn.innerHTML=`<svg viewBox="0 0 24 24"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3H10z"/><path d="M17 2h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"/></svg>`;
+    ma.appendChild(up); ma.appendChild(dn);
 
     g.appendChild(bh); g.appendChild(bub); g.appendChild(ma);
   }
@@ -705,23 +712,83 @@ function renderMsg(text, type, files=[], index=-1){
   G('chat-cont').scrollTop=999999;
 }
 
-function addMsg(text,type,files=[]){
+/**
+ * Render le contenu d'une bulle bot :
+ * - Blocs ```mermaid → rendu avec wrapper card
+ * - Blocs de code → header avec nom du langage + copie
+ * - Reste → Markdown normal
+ */
+function renderBubbleContent(bub, text){
+  // Split sur les blocs de code (```lang ... ```)
+  const parts = text.split(/(```[\s\S]*?```)/g);
+
+  parts.forEach(part => {
+    const mermaidMatch = part.match(/^```mermaid\n?([\s\S]*?)```$/);
+    const codeMatch    = part.match(/^```(\w*)\n?([\s\S]*?)```$/);
+
+    if(mermaidMatch){
+      // Mermaid diagram
+      const code = mermaidMatch[1].trim();
+      const wrap = document.createElement('div');
+      wrap.className = 'mermaid-wrap';
+      const mDiv = document.createElement('div');
+      mDiv.className = 'mermaid';
+      mDiv.textContent = code;
+      wrap.appendChild(mDiv);
+      bub.appendChild(wrap);
+      // Render async
+      setTimeout(()=>{
+        try{ mermaid.run({ nodes: [mDiv] }); }catch(e){ mDiv.textContent=code; }
+      }, 100);
+
+    } else if(codeMatch){
+      // Code block
+      const lang = codeMatch[1] || 'code';
+      const code = codeMatch[2] || '';
+      const pre = document.createElement('pre');
+      const hdr = document.createElement('div'); hdr.className='chdr';
+      const langSpan = document.createElement('span'); langSpan.textContent=lang;
+      const cpyBtn = document.createElement('button'); cpyBtn.className='ccpy';
+      cpyBtn.innerHTML=`<svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copier`;
+      cpyBtn.addEventListener('click',()=>copyText(code));
+      hdr.appendChild(langSpan); hdr.appendChild(cpyBtn);
+      const codeEl = document.createElement('code');
+      codeEl.textContent = code;
+      if(lang && lang !== 'code') codeEl.className = `language-${lang}`;
+      pre.appendChild(hdr); pre.appendChild(codeEl);
+      bub.appendChild(pre);
+      try{ Prism.highlightElement(codeEl); }catch(e){}
+
+    } else if(part.trim()){
+      // Markdown normal
+      const div = document.createElement('div');
+      try{ div.innerHTML = marked.parse(part); }catch{ div.textContent = part; }
+      bub.appendChild(div);
+    }
+  });
+}
+
+function addMsg(text, type, files=[], usedTool=null){
   const chat=G('chat'), wel=G('welcome');
   chat.style.display='flex'; wel.style.display='none';
   const i=convs[curId].messages.length;
-  renderMsg(text,type,files,i);
-  convs[curId].messages.push({role:type==='user'?'user':'assistant',content:text,files:files.map(f=>({name:f.name}))});
+  renderMsg(text, type, files, i, usedTool);
+  convs[curId].messages.push({
+    role: type==='user'?'user':'assistant',
+    content: text,
+    files: files.map(f=>({name:f.name})),
+    tool: usedTool
+  });
   save();
 }
 
 // ═══════════════════════════════════
-// THINKING DOTS
+// THINKING
 // ═══════════════════════════════════
 let thinkEl=null;
 function showThink(){
   const chat=G('chat');
-  thinkEl=document.createElement('div');
-  thinkEl.className='mg bot';
+  thinkEl=document.createElement('div'); thinkEl.className='mg bot';
   const bh=document.createElement('div'); bh.className='bh';
   const bico=document.createElement('div'); bico.className='bico'; bico.innerHTML=logoSVG(15);
   const blbl=document.createElement('span'); blbl.className='blbl'; blbl.textContent='RokyGPT';
@@ -745,17 +812,16 @@ async function regen(idx){
   const bots=G('chat').querySelectorAll('.mg.bot');
   if(bots.length) bots[bots.length-1].remove();
   showThink(); await doSync();
-  const fd=new FormData();
-  fd.append('message',lastUser); fd.append('userId',curId);
+  const fd=new FormData(); fd.append('message',lastUser); fd.append('userId',curId);
   try{
     const r=await fetch('/chat',{method:'POST',body:fd});
     if(!r.ok) throw new Error(r.status);
-    const d=await r.json(); hideThink(); addMsg(d.reply||'Pas de réponse...','bot');
+    const d=await r.json(); hideThink(); addMsg(d.reply||'Pas de réponse...','bot',[],d.tool||null);
   }catch(e){ hideThink(); addMsg('Erreur lors de la régénération','bot'); }
 }
 
 // ═══════════════════════════════════
-// INPUT
+// INPUT & SEND
 // ═══════════════════════════════════
 const tin=G('tinput'), snd=G('send-btn'), fin=G('files');
 
@@ -765,16 +831,15 @@ tin.addEventListener('input',()=>{
   snd.disabled=!tin.value.trim()&&fin.files.length===0;
 });
 
-fin.addEventListener('change',()=>{ renderChips(); snd.disabled=!tin.value.trim()&&fin.files.length===0; });
-
-function renderChips(){
+fin.addEventListener('change',()=>{
   const chips=G('fchips'); chips.innerHTML='';
   Array.from(fin.files).forEach(f=>{
     const c=document.createElement('div'); c.className='fchip';
     c.innerHTML=`📎 <span>${escH(f.name)}</span>`;
     chips.appendChild(c);
   });
-}
+  snd.disabled=!tin.value.trim()&&fin.files.length===0;
+});
 
 function fill(text){ tin.value=text; tin.dispatchEvent(new Event('input')); tin.focus(); }
 
@@ -792,9 +857,12 @@ async function send(){
   try{
     const r=await fetch('/chat',{method:'POST',body:fd});
     if(!r.ok) throw new Error(r.status);
-    const d=await r.json(); hideThink(); addMsg(d.reply||'Pas de réponse...','bot');
+    const d=await r.json();
+    hideThink();
+    addMsg(d.reply||'Pas de réponse...','bot',[],d.tool||null);
   }catch(e){
-    console.error(e); hideThink(); addMsg('Erreur de connexion — réessaie dans quelques secondes.','bot');
+    console.error(e); hideThink();
+    addMsg('Erreur de connexion — réessaie dans quelques secondes.','bot');
   }
   snd.disabled=!tin.value.trim();
 }
@@ -807,7 +875,7 @@ tin.addEventListener('keydown',e=>{ if(e.key==='Enter'&&!e.shiftKey){ e.preventD
 // ═══════════════════════════════════
 renderList();
 loadConv(curId);
-if(curUser) closeAuth(); // déjà connecté, pas besoin du modal
+if(curUser) closeAuth();
 </script>
 </body>
 </html>
