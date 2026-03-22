@@ -284,24 +284,14 @@ app.post("/chat", upload.array("files"), async (req, res) => {
     let usedTool = null;
 
     if (toolResult && toolResult.async) {
-      // Tool Search — appel DuckDuckGo interne
-      try {
-        const searchData = await duckSearch(toolResult.query);
-        if (searchData.error) {
-          finalReply = `❌ Recherche échouée : ${searchData.error}`;
-        } else if (!searchData.results.length) {
-          finalReply = `🔍 Aucun résultat trouvé pour **"${toolResult.query}"**.`;
-        } else {
-          const lines = searchData.results.map((r, i) =>
-            `${i + 1}. **[${r.title}](${r.url})**`
-          ).join("\n");
-          finalReply = (toolResult.explanation ? toolResult.explanation + "\n\n" : "")
-            + `🔍 Résultats pour **"${toolResult.query}"** :\n\n${lines}`;
-        }
-      } catch (e) {
-        finalReply = `❌ Erreur lors de la recherche : ${e.message}`;
-      }
+      // ── Tool Search : recherche → lecture des pages → synthèse Mistral ──
       usedTool = "Search";
+      try {
+        finalReply = await toolSearchAndSynthesize(toolResult.query, content, API_KEY);
+      } catch (e) {
+        console.error("[Search] Erreur globale :", e.message);
+        finalReply = `❌ Erreur lors de la recherche web : ${e.message}`;
+      }
       conversations[userId].push({ role: "assistant", content: finalReply });
 
     } else if (toolResult) {
@@ -321,6 +311,195 @@ app.post("/chat", upload.array("files"), async (req, res) => {
     res.status(500).json({ reply: "Erreur connexion Mistral – réessaie !" });
   }
 });
+
+// ═══════════════════════════════════════════════════════
+// TOOL : NAVIGATION WEB — browsePage + synthèse Mistral
+// ═══════════════════════════════════════════════════════
+
+/**
+ * Télécharge une page web et en extrait le texte brut lisible.
+ * - Supprime <script>, <style>, les balises HTML, et les espaces superflus.
+ * - Respecte un timeout de 5 secondes.
+ * - Limite le texte à MAX_PAGE_CHARS caractères pour ne pas exploser le contexte Mistral.
+ * @param {string} url
+ * @returns {Promise<{url, text, ok, error}>}
+ */
+const PAGE_TIMEOUT_MS  = 5000;   // timeout par page
+const MAX_PAGE_CHARS   = 4000;   // caractères max extraits par page
+const PAGES_TO_BROWSE  = 3;      // nombre de pages lues en parallèle
+
+async function browsePage(url) {
+  const label = `[browse] ${url}`;
+  try {
+    // AbortController pour le timeout
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), PAGE_TIMEOUT_MS);
+
+    const response = await fetch(url, {
+      signal: controller.signal,
+      headers: {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "fr-FR,fr;q=0.9,en;q=0.8"
+      }
+    });
+    clearTimeout(timer);
+
+    if (!response.ok) {
+      console.warn(`${label} → HTTP ${response.status} (ignoré)`);
+      return { url, ok: false, error: `HTTP ${response.status}`, text: "" };
+    }
+
+    // Vérifier que c'est bien du HTML
+    const ct = response.headers.get("content-type") || "";
+    if (!ct.includes("html") && !ct.includes("text")) {
+      console.warn(`${label} → type non-HTML (${ct}), ignoré`);
+      return { url, ok: false, error: "non-HTML", text: "" };
+    }
+
+    const html = await response.text();
+
+    // ── Nettoyage HTML ──
+    let text = html
+      // Supprimer scripts, styles, svg, noscript en entier (contenu inclus)
+      .replace(/<script[\s\S]*?<\/script>/gi, " ")
+      .replace(/<style[\s\S]*?<\/style>/gi, " ")
+      .replace(/<svg[\s\S]*?<\/svg>/gi, " ")
+      .replace(/<noscript[\s\S]*?<\/noscript>/gi, " ")
+      // Convertir certaines balises en sauts de ligne pour préserver la structure
+      .replace(/<\/(p|div|li|h[1-6]|tr|br)[^>]*>/gi, "\n")
+      // Supprimer toutes les balises restantes
+      .replace(/<[^>]+>/g, " ")
+      // Décoder les entités HTML courantes
+      .replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">")
+      .replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&nbsp;/g, " ")
+      .replace(/&#x27;/g, "'").replace(/&#x2F;/g, "/")
+      // Nettoyer espaces multiples et lignes vides
+      .replace(/[ \t]+/g, " ")
+      .replace(/\n{3,}/g, "\n\n")
+      .trim();
+
+    // Limiter la longueur
+    if (text.length > MAX_PAGE_CHARS) {
+      text = text.slice(0, MAX_PAGE_CHARS) + "…";
+    }
+
+    console.log(`${label} → ✅ ${text.length} caractères extraits`);
+    return { url, ok: true, text };
+
+  } catch (e) {
+    const reason = e.name === "AbortError" ? "timeout (5s)" : e.message;
+    console.warn(`${label} → ❌ ${reason}`);
+    return { url, ok: false, error: reason, text: "" };
+  }
+}
+
+/**
+ * Pipeline complet du tool Search :
+ *   1. Recherche DDG  → URLs
+ *   2. Browse pages   → textes
+ *   3. Synthèse Mistral → réponse finale
+ *
+ * @param {string} query        - requête de l'utilisateur
+ * @param {string} userQuestion - message original de l'utilisateur (pour le prompt)
+ * @param {string} apiKey       - clé Mistral
+ * @returns {Promise<string>}   - réponse markdown prête à afficher
+ */
+async function toolSearchAndSynthesize(query, userQuestion, apiKey) {
+  // ── Étape 1 : Recherche ──────────────────────────────
+  console.log(`[Search] 🔍 Recherche : "${query}"`);
+  const { results, method } = await duckSearch(query);
+
+  if (!results.length) {
+    return `🔍 Aucun résultat trouvé pour **"${query}"**. Essayez une formulation différente.`;
+  }
+
+  console.log(`[Search] ${results.length} URL(s) trouvée(s) [méthode: ${method}]`);
+  results.forEach((r, i) => console.log(`  ${i + 1}. ${r.url}`));
+
+  // ── Étape 2 : Navigation des pages (3 premières en parallèle) ───
+  const toVisit = results.slice(0, PAGES_TO_BROWSE);
+  console.log(`[Search] 📄 Navigation de ${toVisit.length} page(s)…`);
+
+  const pageResults = await Promise.all(toVisit.map(r => browsePage(r.url)));
+
+  const successPages = pageResults.filter(p => p.ok && p.text.trim().length > 100);
+  console.log(`[Search] ✅ ${successPages.length}/${toVisit.length} page(s) lue(s) avec succès`);
+
+  // ── Étape 3 : Construction du prompt de synthèse ────
+  let pagesContext = "";
+
+  if (successPages.length > 0) {
+    pagesContext = successPages.map((p, i) =>
+      `[PAGE ${i + 1}] Source : ${p.url}\n${p.text}`
+    ).join("\n\n---\n\n");
+  } else {
+    // Aucune page lisible → synthèse uniquement à partir des titres/URLs
+    console.warn("[Search] Aucune page lisible, synthèse sur les titres uniquement");
+    const titlesOnly = results.map((r, i) =>
+      `${i + 1}. ${r.title} — ${r.url}`
+    ).join("\n");
+    pagesContext = `Aucun contenu de page n'a pu être extrait. Voici les titres des résultats :\n${titlesOnly}`;
+  }
+
+  const sourcesBlock = results
+    .slice(0, 5)
+    .map((r, i) => `${i + 1}. [${r.title}](${r.url})`)
+    .join("\n");
+
+  const synthesisPrompt = `Tu es RokyGPT. Un utilisateur t'a posé la question suivante :
+"${userQuestion}"
+
+Pour y répondre, voici le contenu extrait de plusieurs pages web (recherche : "${query}") :
+
+${pagesContext}
+
+---
+
+En te basant sur ces informations, réponds à la question de l'utilisateur de façon :
+- Claire et synthétique (pas de copier-coller brut)
+- Structurée avec des titres ou bullet points si utile
+- En français
+- En indiquant si l'information est récente ou non quand c'est pertinent
+
+Ne mentionne pas explicitement les pages ou leur structure. Réponds directement à la question.`;
+
+  // ── Étape 4 : Appel Mistral pour la synthèse ────────
+  console.log(`[Search] 🤖 Synthèse Mistral en cours…`);
+
+  const mistralRes = await fetch("https://api.mistral.ai/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      model: "mistral-small-latest",
+      messages: [{ role: "user", content: synthesisPrompt }],
+      temperature: 0.4,   // plus factuel pour une synthèse
+      max_tokens: 1024
+    })
+  });
+
+  if (!mistralRes.ok) {
+    throw new Error(`Mistral synthesis HTTP ${mistralRes.status}`);
+  }
+
+  const mistralData = await mistralRes.json();
+  const synthesis = mistralData.choices?.[0]?.message?.content?.trim()
+    || "Je n'ai pas pu générer une synthèse.";
+
+  console.log(`[Search] ✅ Synthèse générée (${synthesis.length} chars)`);
+
+  // ── Étape 5 : Réponse finale avec sources ───────────
+  const reply = `${synthesis}
+
+---
+🔍 **Sources** :
+${sourcesBlock}`;
+
+  return reply;
+}
 
 // ═══════════════════════════════════════════════════════
 // TOOL : RECHERCHE WEB
