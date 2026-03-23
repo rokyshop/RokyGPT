@@ -33,8 +33,17 @@ Tools disponibles :
 - "Date" : pour donner la date et/ou l'heure actuelle. input = ""
 - "Calcul" : pour effectuer un calcul mathématique. input = expression mathématique (ex: "23*47", "Math.sqrt(144)", "2**10")
 - "CodeJS" : pour exécuter du code JavaScript simple et sécurisé. input = le code JS à exécuter (retourner une valeur avec return ou console.log)
-- "Mermaid" : pour générer un diagramme Mermaid. input = le code Mermaid complet (ex: "graph TD; A-->B")
+- "Mermaid" : pour générer un diagramme Mermaid statique. input = le code Mermaid complet (ex: "graph TD; A-->B")
 - "Search" : pour rechercher des informations récentes sur le web via DuckDuckGo. input = la requête de recherche en français ou anglais
+- "Interactive" : pour générer un composant interactif riche. Utilise ce tool quand l'utilisateur demande :
+  * Une liste de tâches / checklist / todo list (ex: "fais-moi une liste de courses", "liste des étapes pour...")
+  * Un graphique interactif / chart / courbe avec des données (ex: "fais un graphique des ventes", "montre-moi une courbe sin(x)")
+  * Un graphique mathématique où on peut changer les paramètres / axes (ex: "graphique de sin(x)", "courbe de y=ax²", "fonction interactive")
+  * Un diagramme qu'on peut déplacer / drag & drop (ex: "diagramme interactif", "flowchart qu'on peut bouger")
+  * Un tableau de données interactif / tri / filtre
+  * Un formulaire ou outil interactif (calculateur, convertisseur, quiz, timer)
+  * Tout composant visuel où l'utilisateur doit pouvoir cliquer, glisser, ou modifier des valeurs
+  input = description précise de ce qu'il faut générer (type, données, style)
 
 Si aucun tool n'est nécessaire, réponds normalement en texte ou Markdown.
 
@@ -45,16 +54,94 @@ Exemples :
 - "Exécute ce code JS : [1,2,3].map(x=>x*2)" → {"tool":"CodeJS","input":"return [1,2,3].map(x=>x*2)"}
 - "Cherche des infos sur Node.js" → {"tool":"Search","input":"Node.js"}
 - "Quelles sont les dernières news sur l'IA ?" → {"tool":"Search","input":"latest AI news 2025"}
+- "Fais-moi une liste de courses" → {"tool":"Interactive","input":"checklist liste de courses avec des items typiques (pain, lait, œufs, fruits, légumes, viande)"}
+- "Graphique de sin(x) interactif" → {"tool":"Interactive","input":"graphique mathématique interactif de la fonction sin(x) avec slider pour amplitude et fréquence, axes déplaçables"}
+- "Diagramme flowchart qu'on peut bouger" → {"tool":"Interactive","input":"diagramme flowchart drag-and-drop d'un processus de connexion utilisateur"}
+- "Fais un graphique des ventes par mois" → {"tool":"Interactive","input":"graphique bar chart des ventes mensuelles sur 12 mois avec données réalistes, interactif avec tooltip"}
 
 Ne retourne JAMAIS de JSON enveloppé dans du markdown. Seulement du JSON brut ou du texte.`;
+
+// ═══════════════════════════════════════════════════════
+// SYSTEM PROMPT pour la génération de composants interactifs
+// ═══════════════════════════════════════════════════════
+const INTERACTIVE_SYSTEM_PROMPT = `Tu es un expert en développement web qui génère des composants HTML/CSS/JS interactifs magnifiques.
+
+Tu dois générer UNIQUEMENT du code HTML complet et autonome (un seul fichier HTML avec <style> et <script> inclus).
+
+RÈGLES ABSOLUES :
+1. Retourne UNIQUEMENT le code HTML, rien d'autre — pas de markdown, pas d'explication, pas de \`\`\`html
+2. Le HTML doit être complet et autonome (fonctionne seul dans un iframe)
+3. Design sombre par défaut : background #1a1a1a, texte #ececec, accent #10a37f
+4. Taille : s'adapte à la largeur disponible (max 100%), hauteur auto
+5. Pas de body padding excessif, commence directement le contenu
+
+LIBRAIRIES AUTORISÉES (CDN) :
+- Chart.js : https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js
+- Mermaid : https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js
+- D3.js : https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js
+- interact.js (drag & drop) : https://cdn.jsdelivr.net/npm/interactjs@1.10.27/dist/interact.min.js
+
+TYPES DE COMPOSANTS À SAVOIR FAIRE PARFAITEMENT :
+
+1. CHECKLIST / TODO :
+   - Cases à cocher stylisées (pas les <input> natifs moches)
+   - Animation au coche (✓ avec transition)
+   - Texte barré quand coché
+   - Compteur "X/Y complétés"
+   - Bouton "Tout cocher" / "Réinitialiser"
+   - Drag pour réorganiser les items
+
+2. GRAPHIQUE MATHÉMATIQUE INTERACTIF :
+   - Canvas ou SVG pour dessiner la courbe
+   - Sliders pour modifier les paramètres (amplitude, fréquence, phase...)
+   - Axes X et Y avec graduations
+   - Pan (déplacer) et zoom avec la molette
+   - Affichage de la formule en temps réel
+   - Crosshair au survol avec coordonnées
+
+3. CHART DE DONNÉES (Chart.js) :
+   - Bar chart, line chart, pie chart selon le contexte
+   - Tooltips au survol
+   - Légende interactive (clic pour masquer/afficher)
+   - Animation d'entrée
+   - Couleurs cohérentes avec le thème sombre
+
+4. DIAGRAMME DRAG & DROP :
+   - Nœuds déplaçables avec interact.js
+   - Connexions SVG qui suivent les nœuds
+   - Double-clic pour éditer le texte d'un nœud
+   - Bouton pour ajouter un nœud
+   - Snap to grid optionnel
+
+5. TABLEAU INTERACTIF :
+   - Tri par colonne (clic header)
+   - Filtre/recherche en temps réel
+   - Pagination
+   - Export CSV
+
+6. OUTILS (calculateur, timer, quiz...) :
+   - Interface soignée et intuitive
+   - Feedback visuel immédiat
+   - Animations et transitions
+
+STYLE OBLIGATOIRE :
+\`\`\`css
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { 
+  background: #1a1a1a; 
+  color: #ececec; 
+  font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+  padding: 12px;
+  min-height: 100vh;
+}
+\`\`\`
+
+Génère maintenant le composant demandé. UNIQUEMENT le HTML, rien d'autre.`;
 
 // ═══════════════════════════════════════════════════════
 // TOOLS — exécutés côté serveur, sécurisés
 // ═══════════════════════════════════════════════════════
 
-/**
- * Tool : Date/Heure
- */
 function toolDate() {
   const now = new Date();
   const options = { weekday: "long", year: "numeric", month: "long", day: "numeric" };
@@ -63,23 +150,15 @@ function toolDate() {
   return `📅 **${dateStr}** — il est **${timeStr}**`;
 }
 
-/**
- * Tool : Calcul mathématique
- * Utilise vm.runInNewContext avec un contexte limité — pas d'accès à Node/FS/process
- */
 function toolCalc(expression) {
   if (!expression || expression.trim().length === 0) return "❌ Expression vide.";
   if (expression.length > 500) return "❌ Expression trop longue.";
 
-  // Whitelist des chars autorisés pour sécurité maximale
   const safe = /^[\d\s\+\-\*\/\%\(\)\.\,MathsqrtpowlogfloorceileabsroundPIEsincostan]+$/.test(expression.replace(/\s/g, ""));
   if (!safe) return "❌ Expression non autorisée (caractères invalides).";
 
   try {
-    const sandbox = {
-      Math,
-      result: undefined
-    };
+    const sandbox = { Math, result: undefined };
     const code = `result = (${expression})`;
     vm.runInNewContext(code, sandbox, { timeout: 500 });
     const r = sandbox.result;
@@ -92,15 +171,10 @@ function toolCalc(expression) {
   }
 }
 
-/**
- * Tool : Code JS sandbox
- * Exécution dans un contexte vm isolé, timeout 1s, pas d'accès à require/process/fs
- */
 function toolCodeJS(code) {
   if (!code || code.trim().length === 0) return "❌ Code vide.";
   if (code.length > 2000) return "❌ Code trop long (max 2000 caractères).";
 
-  // Blocage des mots-clés dangereux
   const forbidden = ["require", "process", "__dirname", "__filename", "global", "Buffer", "eval", "Function(", "fetch", "import"];
   for (const kw of forbidden) {
     if (code.includes(kw)) return `❌ Mot-clé interdit : \`${kw}\``;
@@ -108,17 +182,8 @@ function toolCodeJS(code) {
 
   const logs = [];
   const sandbox = {
-    Math,
-    JSON,
-    parseInt,
-    parseFloat,
-    isNaN,
-    isFinite,
-    String,
-    Number,
-    Boolean,
-    Array,
-    Object,
+    Math, JSON, parseInt, parseFloat, isNaN, isFinite,
+    String, Number, Boolean, Array, Object,
     console: {
       log: (...args) => logs.push(args.map(a => {
         try { return typeof a === "object" ? JSON.stringify(a) : String(a); } catch { return String(a); }
@@ -129,11 +194,9 @@ function toolCodeJS(code) {
   };
 
   try {
-    // Enveloppe le code dans une fonction pour capturer return
     const wrapped = `(function(){ ${code} })()`;
     const r = vm.runInNewContext(wrapped, sandbox, { timeout: 1000 });
     const output = r !== undefined ? r : (logs.length ? null : undefined);
-
     let reply = "";
     if (logs.length) reply += "```\n" + logs.join("\n") + "\n```\n";
     if (output !== undefined && output !== null) {
@@ -146,27 +209,59 @@ function toolCodeJS(code) {
   }
 }
 
-/**
- * Tool : Mermaid (rendu côté front — le serveur valide juste et renvoie le code)
- */
 function toolMermaid(input) {
   if (!input || input.trim().length === 0) return { type: "mermaid", code: "graph TD\n  A[Erreur] --> B[Input vide]" };
   return { type: "mermaid", code: input.trim() };
 }
 
 // ═══════════════════════════════════════════════════════
+// TOOL : INTERACTIVE — génère un composant HTML interactif via Mistral
+// ═══════════════════════════════════════════════════════
+async function toolInteractive(description, apiKey) {
+  console.log(`[Interactive] Génération : "${description}"`);
+
+  const response = await fetch("https://api.mistral.ai/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      model: "mistral-small-latest",
+      messages: [
+        { role: "system", content: INTERACTIVE_SYSTEM_PROMPT },
+        { role: "user", content: `Génère ce composant interactif : ${description}` }
+      ],
+      temperature: 0.3,
+      max_tokens: 4096
+    })
+  });
+
+  if (!response.ok) throw new Error(`Mistral Interactive HTTP ${response.status}`);
+
+  const data = await response.json();
+  let html = data.choices?.[0]?.message?.content?.trim() || "";
+
+  // Nettoyer si Mistral a quand même mis des backticks
+  html = html.replace(/^```html\s*/i, "").replace(/^```\s*/i, "").replace(/\s*```$/, "").trim();
+
+  if (!html.includes("<")) {
+    throw new Error("La réponse ne contient pas de HTML valide");
+  }
+
+  console.log(`[Interactive] ✅ HTML généré (${html.length} chars)`);
+  return html;
+}
+
+// ═══════════════════════════════════════════════════════
 // DÉTECTION ET EXÉCUTION DU TOOL
 // ═══════════════════════════════════════════════════════
 function detectAndRunTool(rawReply) {
-  // Cherche un JSON en début de réponse (potentiellement après des espaces)
   const trimmed = rawReply.trim();
-
-  // Tente de parser si ça ressemble à du JSON
   if (!trimmed.startsWith("{")) return null;
 
   let parsed;
   try {
-    // Prendre uniquement le premier JSON valide (jusqu'au premier "}" fermant)
     const match = trimmed.match(/^\{[\s\S]*?\}(?=\s*$|\s*\n)/);
     parsed = JSON.parse(match ? match[0] : trimmed);
   } catch {
@@ -179,6 +274,11 @@ function detectAndRunTool(rawReply) {
   const input = parsed.input || "";
   const explanation = parsed.explanation || "";
 
+  // Tools async
+  if (tool === "Search") return { async: true, asyncType: "search", query: input, explanation };
+  if (tool === "Interactive") return { async: true, asyncType: "interactive", description: input, explanation };
+
+  // Tools sync
   let toolResult = "";
   let isMermaid = false;
   let mermaidCode = "";
@@ -199,11 +299,8 @@ function detectAndRunTool(rawReply) {
       mermaidCode = r.code;
       break;
     }
-    case "Search":
-      // La recherche est async — on signale au caller de la gérer séparément
-      return { async: true, query: input, explanation };
     default:
-      return null; // tool inconnu, on laisse passer comme texte normal
+      return null;
   }
 
   if (isMermaid) {
@@ -219,7 +316,6 @@ function detectAndRunTool(rawReply) {
 // ROUTES
 // ═══════════════════════════════════════════════════════
 
-// Restore historique depuis le client
 app.post("/restore", (req, res) => {
   const { userId, messages } = req.body;
   if (!userId || !Array.isArray(messages)) {
@@ -232,7 +328,6 @@ app.post("/restore", (req, res) => {
   res.json({ success: true });
 });
 
-// Chat principal
 app.post("/chat", upload.array("files"), async (req, res) => {
   const { message, userId } = req.body;
   const files = req.files || [];
@@ -250,10 +345,9 @@ app.post("/chat", upload.array("files"), async (req, res) => {
 
   conversations[userId].push({ role: "user", content });
 
-  // Trim historique
   if (conversations[userId].length > 42) {
     conversations[userId] = [
-      conversations[userId][0], // garde le system prompt
+      conversations[userId][0],
       ...conversations[userId].slice(-40)
     ];
   }
@@ -278,33 +372,48 @@ app.post("/chat", upload.array("files"), async (req, res) => {
     const data = await response.json();
     let rawReply = data.choices?.[0]?.message?.content || "Désolé, je n'ai pas compris...";
 
-    // Tente de détecter et exécuter un tool
     const toolResult = detectAndRunTool(rawReply);
     let finalReply;
     let usedTool = null;
+    let interactiveHtml = null;
 
     if (toolResult && toolResult.async) {
-      // ── Tool Search : recherche → lecture des pages → synthèse Mistral ──
-      usedTool = "Search";
-      try {
-        finalReply = await toolSearchAndSynthesize(toolResult.query, content, API_KEY);
-      } catch (e) {
-        console.error("[Search] Erreur globale :", e.message);
-        finalReply = `❌ Erreur lors de la recherche web : ${e.message}`;
+
+      if (toolResult.asyncType === "search") {
+        // ── Tool Search ──
+        usedTool = "Search";
+        try {
+          finalReply = await toolSearchAndSynthesize(toolResult.query, content, API_KEY);
+        } catch (e) {
+          console.error("[Search] Erreur globale :", e.message);
+          finalReply = `❌ Erreur lors de la recherche web : ${e.message}`;
+        }
+        conversations[userId].push({ role: "assistant", content: finalReply });
+
+      } else if (toolResult.asyncType === "interactive") {
+        // ── Tool Interactive ──
+        usedTool = "Interactive";
+        try {
+          interactiveHtml = await toolInteractive(toolResult.description, API_KEY);
+          finalReply = toolResult.explanation || "Voici ton composant interactif ✨";
+        } catch (e) {
+          console.error("[Interactive] Erreur :", e.message);
+          finalReply = `❌ Erreur lors de la génération du composant : ${e.message}`;
+          interactiveHtml = null;
+        }
+        conversations[userId].push({ role: "assistant", content: finalReply });
       }
-      conversations[userId].push({ role: "assistant", content: finalReply });
 
     } else if (toolResult) {
       finalReply = toolResult.reply;
       usedTool = toolResult.tool;
-      // On stocke le résultat du tool dans l'historique (pas le JSON brut)
       conversations[userId].push({ role: "assistant", content: finalReply });
     } else {
       finalReply = rawReply;
       conversations[userId].push({ role: "assistant", content: finalReply });
     }
 
-    res.json({ reply: finalReply, tool: usedTool });
+    res.json({ reply: finalReply, tool: usedTool, interactiveHtml });
 
   } catch (err) {
     console.error(err);
@@ -313,25 +422,15 @@ app.post("/chat", upload.array("files"), async (req, res) => {
 });
 
 // ═══════════════════════════════════════════════════════
-// TOOL : NAVIGATION WEB — browsePage + synthèse Mistral
+// TOOL : NAVIGATION WEB
 // ═══════════════════════════════════════════════════════
-
-/**
- * Télécharge une page web et en extrait le texte brut lisible.
- * - Supprime <script>, <style>, les balises HTML, et les espaces superflus.
- * - Respecte un timeout de 5 secondes.
- * - Limite le texte à MAX_PAGE_CHARS caractères pour ne pas exploser le contexte Mistral.
- * @param {string} url
- * @returns {Promise<{url, text, ok, error}>}
- */
-const PAGE_TIMEOUT_MS  = 5000;   // timeout par page
-const MAX_PAGE_CHARS   = 4000;   // caractères max extraits par page
-const PAGES_TO_BROWSE  = 3;      // nombre de pages lues en parallèle
+const PAGE_TIMEOUT_MS  = 5000;
+const MAX_PAGE_CHARS   = 4000;
+const PAGES_TO_BROWSE  = 3;
 
 async function browsePage(url) {
   const label = `[browse] ${url}`;
   try {
-    // AbortController pour le timeout
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), PAGE_TIMEOUT_MS);
 
@@ -350,7 +449,6 @@ async function browsePage(url) {
       return { url, ok: false, error: `HTTP ${response.status}`, text: "" };
     }
 
-    // Vérifier que c'est bien du HTML
     const ct = response.headers.get("content-type") || "";
     if (!ct.includes("html") && !ct.includes("text")) {
       console.warn(`${label} → type non-HTML (${ct}), ignoré`);
@@ -359,27 +457,20 @@ async function browsePage(url) {
 
     const html = await response.text();
 
-    // ── Nettoyage HTML ──
     let text = html
-      // Supprimer scripts, styles, svg, noscript en entier (contenu inclus)
       .replace(/<script[\s\S]*?<\/script>/gi, " ")
       .replace(/<style[\s\S]*?<\/style>/gi, " ")
       .replace(/<svg[\s\S]*?<\/svg>/gi, " ")
       .replace(/<noscript[\s\S]*?<\/noscript>/gi, " ")
-      // Convertir certaines balises en sauts de ligne pour préserver la structure
       .replace(/<\/(p|div|li|h[1-6]|tr|br)[^>]*>/gi, "\n")
-      // Supprimer toutes les balises restantes
       .replace(/<[^>]+>/g, " ")
-      // Décoder les entités HTML courantes
       .replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">")
       .replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&nbsp;/g, " ")
       .replace(/&#x27;/g, "'").replace(/&#x2F;/g, "/")
-      // Nettoyer espaces multiples et lignes vides
       .replace(/[ \t]+/g, " ")
       .replace(/\n{3,}/g, "\n\n")
       .trim();
 
-    // Limiter la longueur
     if (text.length > MAX_PAGE_CHARS) {
       text = text.slice(0, MAX_PAGE_CHARS) + "…";
     }
@@ -394,19 +485,7 @@ async function browsePage(url) {
   }
 }
 
-/**
- * Pipeline complet du tool Search :
- *   1. Recherche DDG  → URLs
- *   2. Browse pages   → textes
- *   3. Synthèse Mistral → réponse finale
- *
- * @param {string} query        - requête de l'utilisateur
- * @param {string} userQuestion - message original de l'utilisateur (pour le prompt)
- * @param {string} apiKey       - clé Mistral
- * @returns {Promise<string>}   - réponse markdown prête à afficher
- */
 async function toolSearchAndSynthesize(query, userQuestion, apiKey) {
-  // ── Étape 1 : Recherche ──────────────────────────────
   console.log(`[Search] 🔍 Recherche : "${query}"`);
   const { results, method } = await duckSearch(query);
 
@@ -415,37 +494,22 @@ async function toolSearchAndSynthesize(query, userQuestion, apiKey) {
   }
 
   console.log(`[Search] ${results.length} URL(s) trouvée(s) [méthode: ${method}]`);
-  results.forEach((r, i) => console.log(`  ${i + 1}. ${r.url}`));
 
-  // ── Étape 2 : Navigation des pages (3 premières en parallèle) ───
   const toVisit = results.slice(0, PAGES_TO_BROWSE);
-  console.log(`[Search] 📄 Navigation de ${toVisit.length} page(s)…`);
-
   const pageResults = await Promise.all(toVisit.map(r => browsePage(r.url)));
-
   const successPages = pageResults.filter(p => p.ok && p.text.trim().length > 100);
-  console.log(`[Search] ✅ ${successPages.length}/${toVisit.length} page(s) lue(s) avec succès`);
 
-  // ── Étape 3 : Construction du prompt de synthèse ────
   let pagesContext = "";
-
   if (successPages.length > 0) {
     pagesContext = successPages.map((p, i) =>
       `[PAGE ${i + 1}] Source : ${p.url}\n${p.text}`
     ).join("\n\n---\n\n");
   } else {
-    // Aucune page lisible → synthèse uniquement à partir des titres/URLs
-    console.warn("[Search] Aucune page lisible, synthèse sur les titres uniquement");
-    const titlesOnly = results.map((r, i) =>
-      `${i + 1}. ${r.title} — ${r.url}`
-    ).join("\n");
+    const titlesOnly = results.map((r, i) => `${i + 1}. ${r.title} — ${r.url}`).join("\n");
     pagesContext = `Aucun contenu de page n'a pu être extrait. Voici les titres des résultats :\n${titlesOnly}`;
   }
 
-  const sourcesBlock = results
-    .slice(0, 5)
-    .map((r, i) => `${i + 1}. [${r.title}](${r.url})`)
-    .join("\n");
+  const sourcesBlock = results.slice(0, 5).map((r, i) => `${i + 1}. [${r.title}](${r.url})`).join("\n");
 
   const synthesisPrompt = `Tu es RokyGPT. Un utilisateur t'a posé la question suivante :
 "${userQuestion}"
@@ -464,67 +528,34 @@ En te basant sur ces informations, réponds à la question de l'utilisateur de f
 
 Ne mentionne pas explicitement les pages ou leur structure. Réponds directement à la question.`;
 
-  // ── Étape 4 : Appel Mistral pour la synthèse ────────
-  console.log(`[Search] 🤖 Synthèse Mistral en cours…`);
-
   const mistralRes = await fetch("https://api.mistral.ai/v1/chat/completions", {
     method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json"
-    },
+    headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
     body: JSON.stringify({
       model: "mistral-small-latest",
       messages: [{ role: "user", content: synthesisPrompt }],
-      temperature: 0.4,   // plus factuel pour une synthèse
+      temperature: 0.4,
       max_tokens: 1024
     })
   });
 
-  if (!mistralRes.ok) {
-    throw new Error(`Mistral synthesis HTTP ${mistralRes.status}`);
-  }
+  if (!mistralRes.ok) throw new Error(`Mistral synthesis HTTP ${mistralRes.status}`);
 
   const mistralData = await mistralRes.json();
-  const synthesis = mistralData.choices?.[0]?.message?.content?.trim()
-    || "Je n'ai pas pu générer une synthèse.";
+  const synthesis = mistralData.choices?.[0]?.message?.content?.trim() || "Je n'ai pas pu générer une synthèse.";
 
-  console.log(`[Search] ✅ Synthèse générée (${synthesis.length} chars)`);
-
-  // ── Étape 5 : Réponse finale avec sources ───────────
-  const reply = `${synthesis}
-
----
-🔍 **Sources** :
-${sourcesBlock}`;
-
-  return reply;
+  return `${synthesis}\n\n---\n🔍 **Sources** :\n${sourcesBlock}`;
 }
 
 // ═══════════════════════════════════════════════════════
-// TOOL : RECHERCHE WEB
+// TOOL : RECHERCHE WEB (DuckDuckGo)
 // ═══════════════════════════════════════════════════════
-// Stratégie en 2 étapes :
-//   1. Scraping HTML de html.duckduckgo.com  (vrais résultats de recherche web)
-//   2. Fallback : API JSON de api.duckduckgo.com (instant answers / Wikipedia)
-// L'API JSON ne renvoie rien pour les actualités — c'est la cause du bug.
-// Le scraping HTML lui couvre toutes les requêtes comme un vrai moteur.
-// ═══════════════════════════════════════════════════════
-
-/**
- * Extrait les résultats depuis la page HTML de DuckDuckGo.
- * DDG HTML renvoie des balises <a class="result__a"> avec les titres
- * et des <a class="result__url"> ou l'attribut href avec l'URL réelle.
- *
- * On parse avec des regex légères — pas besoin de cheerio.
- */
 async function duckSearchHTML(query) {
   const encoded = encodeURIComponent(query);
   const url = `https://html.duckduckgo.com/html/?q=${encoded}&kl=fr-fr`;
 
   const response = await fetch(url, {
     headers: {
-      // User-Agent réaliste pour éviter les blocages
       "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
       "Accept-Language": "fr-FR,fr;q=0.9,en;q=0.8",
       "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
@@ -534,12 +565,9 @@ async function duckSearchHTML(query) {
   if (!response.ok) throw new Error(`DDG HTML HTTP ${response.status}`);
 
   const html = await response.text();
-
   const results = [];
   const seen = new Set();
 
-  // Pattern 1 : liens de résultat principaux
-  // <a rel="nofollow" class="result__a" href="//duckduckgo.com/l/?uddg=...">Titre</a>
   const linkRe = /class="result__a"[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/gi;
   let m;
   while ((m = linkRe.exec(html)) !== null && results.length < 5) {
@@ -547,7 +575,6 @@ async function duckSearchHTML(query) {
     const rawTitle = m[2].replace(/<[^>]+>/g, "").replace(/&amp;/g,"&").replace(/&lt;/g,"<").replace(/&gt;/g,">").replace(/&#x27;/g,"'").replace(/&quot;/g,'"').trim();
     if (!rawTitle || rawTitle.length < 3) continue;
 
-    // DDG HTML encode les URLs via un redirect /l/?uddg=<encodedURL>
     const uddgMatch = href.match(/uddg=([^&]+)/);
     if (uddgMatch) {
       try { href = decodeURIComponent(uddgMatch[1]); } catch {}
@@ -555,15 +582,12 @@ async function duckSearchHTML(query) {
       href = "https:" + href;
     }
 
-    // Filtrer les liens internes DDG
     if (!href.startsWith("http") || href.includes("duckduckgo.com")) continue;
     if (seen.has(href)) continue;
     seen.add(href);
-
     results.push({ title: rawTitle.slice(0, 120), url: href });
   }
 
-  // Pattern 2 (fallback si Pattern 1 vide) : href directs dans les résultats
   if (results.length === 0) {
     const re2 = /<a[^>]+href="(https?:\/\/(?!duckduckgo)[^"]+)"[^>]*class="[^"]*result[^"]*"[^>]*>([\s\S]*?)<\/a>/gi;
     while ((m = re2.exec(html)) !== null && results.length < 5) {
@@ -578,10 +602,6 @@ async function duckSearchHTML(query) {
   return results;
 }
 
-/**
- * Fallback : API JSON DuckDuckGo (instant answers / Wikipedia uniquement).
- * Fonctionne bien pour les entités connues, pas pour l'actualité.
- */
 async function duckSearchJSON(query) {
   const encoded = encodeURIComponent(query);
   const url = `https://api.duckduckgo.com/?q=${encoded}&format=json&no_redirect=1&no_html=1&skip_disambig=1`;
@@ -619,9 +639,6 @@ async function duckSearchJSON(query) {
   }).slice(0, 5);
 }
 
-/**
- * Fonction principale : essaie le HTML d'abord, puis le JSON en fallback.
- */
 async function duckSearch(query) {
   let results = [];
   let method = "html";
@@ -633,7 +650,6 @@ async function duckSearch(query) {
     method = "json-fallback";
   }
 
-  // Si le HTML n'a rien donné, tenter le JSON
   if (results.length === 0) {
     try {
       results = await duckSearchJSON(query);
@@ -646,10 +662,8 @@ async function duckSearch(query) {
   return { results, method };
 }
 
-// ── Route POST /duck-search ──────────────────────────────
 app.post("/duck-search", async (req, res) => {
   const { query } = req.body;
-
   if (!query || typeof query !== "string" || query.trim().length === 0) {
     return res.status(400).json({ error: "Paramètre 'query' manquant ou vide." });
   }
@@ -667,7 +681,6 @@ app.post("/duck-search", async (req, res) => {
   }
 });
 
-// Servir le front
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "index.html"));
 });
