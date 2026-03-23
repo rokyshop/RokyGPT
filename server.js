@@ -317,25 +317,31 @@ function detectAndRunTool(rawReply) {
 // ═══════════════════════════════════════════════════════
 
 app.post("/restore", (req, res) => {
-  const { userId, messages } = req.body;
+  const { userId, messages, memory } = req.body;
   if (!userId || !Array.isArray(messages)) {
     return res.status(400).json({ error: "Données invalides pour restore" });
   }
+  const systemContent = memory && memory.trim()
+    ? SYSTEM_PROMPT + `\n\n📌 INSTRUCTIONS PERMANENTES DE L'UTILISATEUR (à respecter absolument) :\n${memory.trim()}`
+    : SYSTEM_PROMPT;
   conversations[userId] = [
-    { role: "system", content: SYSTEM_PROMPT },
+    { role: "system", content: systemContent },
     ...messages
   ];
   res.json({ success: true });
 });
 
 app.post("/chat", upload.array("files"), async (req, res) => {
-  const { message, userId } = req.body;
+  const { message, userId, memory } = req.body;
   const files = req.files || [];
 
   if (!userId) return res.status(400).json({ error: "Missing userId" });
 
   if (!conversations[userId]) {
-    conversations[userId] = [{ role: "system", content: SYSTEM_PROMPT }];
+    const systemContent = memory && memory.trim()
+      ? SYSTEM_PROMPT + `\n\n📌 INSTRUCTIONS PERMANENTES DE L'UTILISATEUR (à respecter absolument) :\n${memory.trim()}`
+      : SYSTEM_PROMPT;
+    conversations[userId] = [{ role: "system", content: systemContent }];
   }
 
   let content = message || "";
