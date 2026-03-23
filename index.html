@@ -20,7 +20,6 @@
       --btnbg:#fff; --btntxt:#212121;
       --scr:#404040; --codebg:#1a1a1a; --modbg:#1e1e1e; --red:#ef4444;
       --tool-bg:rgba(16,163,127,.08); --tool-bdr:rgba(16,163,127,.25);
-      /* Safe areas pour iPhone notch/home bar */
       --safe-top: env(safe-area-inset-top, 0px);
       --safe-bot: env(safe-area-inset-bottom, 0px);
       --safe-l:   env(safe-area-inset-left,  0px);
@@ -35,13 +34,9 @@
       --tool-bg:rgba(16,163,127,.06); --tool-bdr:rgba(16,163,127,.2);
     }
 
-    /* ══════════════════════════════════════════
-       RESET & BASE
-    ══════════════════════════════════════════ */
     *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
     html {
       height: 100%;
-      /* Empêche le rebond iOS et le zoom au focus sur les inputs */
       -webkit-text-size-adjust: 100%;
       touch-action: manipulation;
     }
@@ -50,11 +45,9 @@
       background: var(--bg);
       color: var(--txt);
       font-size: 15px;
-      /* Layout racine : pleine hauteur, pas d'overflow */
       display: flex;
       height: 100%;
       overflow: hidden;
-      /* Padding safe area côtés */
       padding-left: var(--safe-l);
       padding-right: var(--safe-r);
     }
@@ -73,7 +66,6 @@
       display: flex;
       flex-direction: column;
       padding: 8px;
-      /* Hauteur = viewport - safe areas */
       height: 100%;
       overflow: hidden;
     }
@@ -81,12 +73,11 @@
     #sb-top { display:flex; align-items:center; gap:4px; padding:4px 2px 8px; padding-top: calc(4px + var(--safe-top)); }
 
     .ib {
-      width:40px; height:40px; /* 44px touch target minimum sur mobile */
+      width:40px; height:40px;
       border-radius:8px; border:none; background:transparent;
       color:var(--sub); cursor:pointer;
       display:flex; align-items:center; justify-content:center;
       transition:background .15s, color .15s; flex-shrink:0;
-      /* Tap highlight supprimé */
       -webkit-tap-highlight-color: transparent;
     }
     .ib:hover, .ib:active { background:var(--hov); color:var(--txt); }
@@ -97,7 +88,7 @@
     #search-inp {
       width:100%; padding:9px 12px;
       background:var(--inp); border:1px solid var(--bdr); border-radius:8px;
-      color:var(--txt); font-size:15px; /* ≥16px évite le zoom iOS */
+      color:var(--txt); font-size:15px;
       font-family:inherit; outline:none; transition:border-color .15s;
       -webkit-tap-highlight-color: transparent;
     }
@@ -112,7 +103,7 @@
       color:var(--sub); font-size:14px;
       display:flex; align-items:center; justify-content:space-between; gap:6px;
       transition:background .1s; white-space:nowrap; overflow:hidden;
-      min-height:44px; /* touch target */
+      min-height:44px;
       -webkit-tap-highlight-color: transparent;
     }
     .ci:hover, .ci:active { background:var(--hov); color:var(--txt); }
@@ -145,7 +136,7 @@
     .uname { font-size:14px; font-weight:500; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 
     /* ══════════════════════════════════════════
-       MAIN LAYOUT
+       MAIN
     ══════════════════════════════════════════ */
     #main {
       flex:1;
@@ -157,7 +148,6 @@
       overflow:hidden;
     }
 
-    /* Topbar */
     #topbar {
       flex-shrink: 0;
       height: 52px;
@@ -190,24 +180,16 @@
     .tb:hover, .tb:active { background:var(--hov); color:var(--txt); }
     .tb svg { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
 
-    /* ══════════════════════════════════════════
-       CHAT CONTAINER
-       Trick clé : utilise flex:1 + overflow-y:auto
-       Le clavier iOS réduit la hauteur du viewport —
-       flex shrink gère ça automatiquement.
-    ══════════════════════════════════════════ */
     #chat-cont {
       flex: 1;
       overflow-y: auto;
       overflow-x: hidden;
       display: flex;
       flex-direction: column;
-      /* Scroll momentum iOS */
       -webkit-overflow-scrolling: touch;
       overscroll-behavior: contain;
     }
 
-    /* Welcome screen */
     #welcome {
       display:flex; flex-direction:column; align-items:center; justify-content:center;
       flex:1; padding:32px 16px; text-align:center; gap:0;
@@ -257,7 +239,6 @@
       background:var(--ubub); border-radius:18px;
       padding:11px 15px; max-width:88%;
       font-size:15px; line-height:1.6;
-      /* Empêche les longs mots de déborder */
       word-break: break-word; overflow-wrap: break-word;
     }
     .mg.bot { align-items:flex-start; }
@@ -290,7 +271,6 @@
     .mg.bot .bub a { color:var(--acc); text-decoration:none; }
     .mg.bot .bub a:hover { text-decoration:underline; }
 
-    /* Code blocks — scroll horizontal sur mobile */
     .mg.bot .bub pre {
       background:var(--codebg); border-radius:10px;
       overflow:hidden; margin:10px 0;
@@ -319,17 +299,87 @@
     .mg.bot .bub code:not(pre code) { background:rgba(255,255,255,.1); padding:2px 6px; border-radius:4px; font-size:13px; }
     body.light .mg.bot .bub code:not(pre code) { background:rgba(0,0,0,.07); }
 
-    /* Mermaid */
     .mermaid-wrap {
       background:var(--tool-bg); border:1px solid var(--tool-bdr);
       border-radius:12px; padding:16px; margin:8px 0;
       overflow-x:auto; -webkit-overflow-scrolling:touch;
     }
 
-    /* Message actions */
+    /* ══════════════════════════════════════════
+       INTERACTIVE WIDGET CONTAINER
+    ══════════════════════════════════════════ */
+    .interactive-wrap {
+      border: 1px solid var(--tool-bdr);
+      border-radius: 14px;
+      overflow: hidden;
+      margin: 8px 0;
+      background: #1a1a1a;
+      position: relative;
+    }
+    .interactive-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 12px;
+      background: rgba(16,163,127,.1);
+      border-bottom: 1px solid var(--tool-bdr);
+      font-size: 12px;
+      color: var(--acc);
+      font-weight: 600;
+    }
+    .interactive-header-left {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .interactive-actions {
+      display: flex;
+      gap: 4px;
+    }
+    .int-btn {
+      background: none;
+      border: 1px solid var(--tool-bdr);
+      color: var(--acc);
+      border-radius: 6px;
+      padding: 3px 8px;
+      font-size: 11px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background .15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .int-btn:hover { background: rgba(16,163,127,.15); }
+    .interactive-iframe {
+      width: 100%;
+      border: none;
+      display: block;
+      /* Hauteur initiale, ajustée par JS */
+      min-height: 200px;
+      max-height: 600px;
+      overflow: hidden;
+      transition: height .3s ease;
+    }
+    .interactive-loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 32px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .int-spinner {
+      width: 18px; height: 18px;
+      border: 2px solid var(--tool-bdr);
+      border-top-color: var(--acc);
+      border-radius: 50%;
+      animation: spin .6s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Message actions ── */
     .ma { display:flex; gap:3px; margin-top:6px; opacity:0; transition:opacity .15s; }
     .mg:hover .ma { opacity:1; }
-    /* Sur mobile : toujours visible (pas de hover) */
     @media (hover:none) { .ma { opacity:1; } }
     .mab {
       width:36px; height:36px; border-radius:6px; border:none;
@@ -349,8 +399,6 @@
 
     /* ══════════════════════════════════════════
        INPUT AREA
-       La zone input colle en bas et prend en compte
-       la home bar iOS (env safe-area-inset-bottom)
     ══════════════════════════════════════════ */
     #input-area {
       flex-shrink: 0;
@@ -373,7 +421,7 @@
 
     #tinput {
       flex:1; background:transparent; border:none; color:var(--txt);
-      font-size:16px; /* ≥16px = pas de zoom iOS au focus ! */
+      font-size:16px;
       resize:none; min-height:44px; max-height:160px;
       outline:none; padding:12px 14px 4px; font-family:inherit; line-height:1.5;
       -webkit-tap-highlight-color: transparent;
@@ -411,7 +459,7 @@
     .ov {
       display:none; position:fixed; inset:0;
       background:rgba(0,0,0,.65); z-index:1000;
-      align-items:flex-end; /* Sur mobile : sheet du bas */
+      align-items:flex-end;
       justify-content:center;
       backdrop-filter:blur(6px);
       padding:0;
@@ -430,7 +478,6 @@
     }
     @keyframes slideUp { from{transform:translateY(40px);opacity:0;} to{transform:translateY(0);opacity:1;} }
 
-    /* Pill de drag sur mobile */
     .mod::before {
       content:'';
       display:block;
@@ -455,7 +502,7 @@
     .mi {
       width:100%; padding:13px 14px;
       background:var(--inp); border:1px solid var(--bdr); border-radius:10px;
-      color:var(--txt); font-size:16px; /* ≥16px = pas de zoom iOS */
+      color:var(--txt); font-size:16px;
       font-family:inherit; outline:none; transition:border-color .15s; margin-bottom:10px;
       -webkit-appearance:none;
     }
@@ -505,7 +552,6 @@
     .tcard .tname { font-weight:600; color:var(--acc); margin-bottom:3px; }
     .tcard .tdesc { color:var(--sub); font-size:12px; }
 
-    /* Toast */
     #toast {
       position:fixed; bottom:calc(80px + var(--safe-bot)); left:50%;
       transform:translateX(-50%) translateY(8px);
@@ -518,15 +564,13 @@
     }
     #toast.on { opacity:1; transform:translateX(-50%) translateY(0); }
 
-    /* Sidebar overlay */
     #sb-ov { display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:199; }
     #sb-ov.on { display:block; }
 
     /* ══════════════════════════════════════════
-       RESPONSIVE MOBILE
+       RESPONSIVE
     ══════════════════════════════════════════ */
     @media (max-width: 768px) {
-      /* Sidebar : tiroir latéral */
       #sidebar {
         position: fixed;
         top: 0; left: 0; bottom: 0;
@@ -541,25 +585,17 @@
         transform: translateX(0);
         box-shadow: 4px 0 32px rgba(0,0,0,.5);
       }
-
-      /* Chat padding réduit */
       #chat { padding: 12px 12px 24px; }
-
-      /* Messages utilisateur moins larges */
       .mg.user .bub { max-width: 92%; }
-
-      /* Welcome screen compact */
       #welcome { padding: 24px 14px; }
       #welcome h1 { font-size: 20px; }
       .sugs { grid-template-columns: 1fr 1fr; gap:8px; }
       .tools-row { gap: 6px; }
-      /* Cache le texte des tool chips, garde juste l'emoji */
       .tool-chip span { display:none; }
-
-      /* Modals : full bottom sheet */
       .ov { align-items: flex-end; }
       .mod { border-radius: 20px 20px 0 0; max-height: 88vh; }
       .tools-grid { grid-template-columns: 1fr; }
+      .interactive-iframe { max-height: 450px; }
     }
 
     @media (max-width: 380px) {
@@ -567,7 +603,6 @@
       #tinput { font-size: 16px; }
     }
 
-    /* iPhone landscape : réduit topbar */
     @media (max-height: 500px) and (orientation: landscape) {
       #topbar { height: calc(44px + var(--safe-top)); }
       #welcome { padding: 16px 14px; }
@@ -625,18 +660,20 @@
   <div id="chat-cont">
     <div id="welcome">
       <h1>Comment puis-je vous aider ?</h1>
-      <p>Question, calcul, diagramme ou code</p>
+      <p>Question, calcul, diagramme, code ou composant interactif</p>
       <div class="tools-row">
         <button class="tool-chip" onclick="fill('Quelle heure est-il ?')">📅 <span>Date</span></button>
         <button class="tool-chip" onclick="fill('Calcule 1024 * 768')">🧮 <span>Calcul</span></button>
         <button class="tool-chip" onclick="fill('Exécute ce code JS : return [1,2,3,4,5].reduce((a,b)=>a+b,0)')">⚙️ <span>Code JS</span></button>
         <button class="tool-chip" onclick="fill('Fais un diagramme Mermaid d\'un processus de connexion')">📊 <span>Diagramme</span></button>
+        <button class="tool-chip" onclick="fill('Fais-moi une checklist interactive pour un projet web')">✅ <span>Checklist</span></button>
+        <button class="tool-chip" onclick="fill('Fais un graphique interactif de sin(x) avec des sliders')">📈 <span>Graphique</span></button>
       </div>
       <div class="sugs">
         <button class="sc" onclick="fill('Explique-moi comment fonctionne l\'IA')"><span class="si">🤖</span><span class="st">Explique l'IA</span>comment ça marche ?</button>
-        <button class="sc" onclick="fill('Écris-moi un poème sur la nature')"><span class="si">✍️</span><span class="st">Crée du contenu</span>poème, histoire...</button>
+        <button class="sc" onclick="fill('Fais-moi un graphique interactif de y=ax² avec slider pour a')"><span class="si">📈</span><span class="st">Graphique math</span>interactif avec sliders</button>
         <button class="sc" onclick="fill('Aide-moi à déboguer mon code Python')"><span class="si">💻</span><span class="st">Code & debug</span>toutes les langues</button>
-        <button class="sc" onclick="fill('Explique-moi les réseaux de neurones')"><span class="si">🧠</span><span class="st">Deep Learning</span>neural nets, ML...</button>
+        <button class="sc" onclick="fill('Fais un diagramme flowchart interactif qu\'on peut déplacer')"><span class="si">🗂️</span><span class="st">Flowchart drag</span>nœuds déplaçables</button>
       </div>
     </div>
     <div id="chat" style="display:none;"></div>
@@ -711,6 +748,7 @@
       <div class="tcard"><div class="tname">⚙️ Code JS</div><div class="tdesc">Exécution sécurisée</div></div>
       <div class="tcard"><div class="tname">📊 Mermaid</div><div class="tdesc">Diagrammes</div></div>
       <div class="tcard"><div class="tname">🔍 Recherche Web</div><div class="tdesc">DuckDuckGo + lecture</div></div>
+      <div class="tcard"><div class="tname">✨ Interactif</div><div class="tdesc">Checklists, graphiques, drag&drop</div></div>
     </div>
     <hr class="mdiv">
     <div class="pcard">
@@ -786,7 +824,6 @@ function copyText(text){
   } else { doFb(); }
 }
 
-// Confirm modal
 let _cr=null;
 function askConfirm(title,msg){
   return new Promise(res=>{
@@ -808,17 +845,11 @@ document.addEventListener('keydown',e=>{
 
 function escH(s){ const d=document.createElement('div');d.textContent=s;return d.innerHTML; }
 
-// ══════════════════════════════════════
-// FIX CLAVIER MOBILE
-// Quand le clavier virtuel s'ouvre sur iOS/Android,
-// il réduit window.innerHeight. On scroll vers le bas pour
-// que le dernier message reste visible.
-// ══════════════════════════════════════
+// Fix clavier mobile
 if('visualViewport' in window){
   let lastVH = window.visualViewport.height;
   window.visualViewport.addEventListener('resize', ()=>{
     const newVH = window.visualViewport.height;
-    // Clavier ouvert = viewport réduit
     if(newVH < lastVH - 50){
       setTimeout(()=>{ G('chat-cont').scrollTop = G('chat-cont').scrollHeight; }, 100);
     }
@@ -939,7 +970,6 @@ function save(){
   localStorage.setItem('rky-convs',JSON.stringify(convs));
   localStorage.setItem('rky-id',curId);
 }
-function escH2(s){ const d=document.createElement('div');d.textContent=s;return d.innerHTML; }
 
 function renderList(){
   const list=G('conv-list'); list.innerHTML='';
@@ -965,7 +995,7 @@ function loadConv(id){
   if(!c.messages.length){ chat.style.display='none'; wel.style.display='flex'; }
   else{
     chat.style.display='flex'; wel.style.display='none';
-    c.messages.forEach((m,i)=>renderMsg(m.content,m.role==='user'?'user':'bot',[],i,m.tool||null));
+    c.messages.forEach((m,i)=>renderMsg(m.content,m.role==='user'?'user':'bot',[],i,m.tool||null,m.interactiveHtml||null));
   }
   setTimeout(()=>{ G('chat-cont').scrollTop=G('chat-cont').scrollHeight; },50);
 }
@@ -1009,18 +1039,97 @@ function autoTitle(text){
 }
 
 // ══════════════════════════════════════
+// INTERACTIVE WIDGET
+// ══════════════════════════════════════
+const TOOL_ICONS  = { Date:'📅', Calcul:'🧮', CodeJS:'⚙️', Mermaid:'📊', Search:'🔍', Interactive:'✨' };
+const TOOL_LABELS = { Date:'Date & Heure', Calcul:'Calcul', CodeJS:'Code JS', Mermaid:'Diagramme', Search:'Recherche Web', Interactive:'Composant Interactif' };
+
+/**
+ * Crée un iframe sandboxé pour afficher le HTML interactif.
+ * - sandbox permet scripts + same-origin pour les CDN
+ * - Auto-resize via message postMessage depuis l'iframe
+ * - Bouton plein écran (ouvre dans un nouvel onglet)
+ */
+function createInteractiveWidget(html, container) {
+  const wrap = document.createElement('div');
+  wrap.className = 'interactive-wrap';
+
+  const header = document.createElement('div');
+  header.className = 'interactive-header';
+  header.innerHTML = `
+    <div class="interactive-header-left">
+      <span>✨</span>
+      <span>Composant interactif</span>
+    </div>
+    <div class="interactive-actions">
+      <button class="int-btn" title="Ouvrir en plein écran">⛶ Agrandir</button>
+      <button class="int-btn" title="Copier le code HTML">⎘ Code</button>
+    </div>
+  `;
+  wrap.appendChild(header);
+
+  const iframe = document.createElement('iframe');
+  iframe.className = 'interactive-iframe';
+  iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-popups');
+  iframe.setAttribute('title', 'Composant interactif RokyGPT');
+  iframe.setAttribute('loading', 'lazy');
+
+  // Injecte un script d'auto-resize dans le HTML
+  const htmlWithResize = html.replace('</body>', `
+<script>
+  // Auto-resize : envoie la hauteur du contenu au parent
+  function sendHeight() {
+    const h = document.documentElement.scrollHeight;
+    window.parent.postMessage({ type: 'rky-resize', height: h }, '*');
+  }
+  // Observer les changements DOM
+  new MutationObserver(sendHeight).observe(document.body, { childList: true, subtree: true, attributes: true });
+  window.addEventListener('load', sendHeight);
+  window.addEventListener('resize', sendHeight);
+  setTimeout(sendHeight, 500);
+  setTimeout(sendHeight, 1500); // Pour Chart.js qui prend du temps
+<\/script>
+</body>`);
+
+  // Écoute les messages de hauteur de l'iframe
+  const resizeHandler = (event) => {
+    if (event.data && event.data.type === 'rky-resize' && event.source === iframe.contentWindow) {
+      const h = Math.min(Math.max(event.data.height + 2, 120), 600);
+      iframe.style.height = h + 'px';
+    }
+  };
+  window.addEventListener('message', resizeHandler);
+
+  // Injecter le HTML via srcdoc
+  iframe.srcdoc = htmlWithResize;
+  wrap.appendChild(iframe);
+
+  // Bouton Agrandir : ouvre dans un nouvel onglet
+  header.querySelector('[title="Ouvrir en plein écran"]').addEventListener('click', () => {
+    const w = window.open('', '_blank');
+    if(w){ w.document.write(html); w.document.close(); }
+  });
+
+  // Bouton Code : copie le HTML
+  header.querySelector('[title="Copier le code HTML"]').addEventListener('click', () => {
+    copyText(html);
+    toast('Code HTML copié !');
+  });
+
+  container.appendChild(wrap);
+  return wrap;
+}
+
+// ══════════════════════════════════════
 // RENDER
 // ══════════════════════════════════════
-const TOOL_ICONS  = { Date:'📅', Calcul:'🧮', CodeJS:'⚙️', Mermaid:'📊', Search:'🔍' };
-const TOOL_LABELS = { Date:'Date & Heure', Calcul:'Calcul', CodeJS:'Code JS', Mermaid:'Diagramme', Search:'Recherche Web' };
-
 function logoSVG(size=15){
   return `<svg viewBox="0 0 41 41" xmlns="http://www.w3.org/2000/svg" fill="black" width="${size}" height="${size}">
     <path d="M37.532 16.87a9.963 9.963 0 0 0-.856-8.184 10.078 10.078 0 0 0-10.855-4.835A9.964 9.964 0 0 0 18.306.5a10.079 10.079 0 0 0-9.614 6.977 9.967 9.967 0 0 0-6.664 4.834 10.08 10.08 0 0 0 1.24 11.817 9.965 9.965 0 0 0 .856 8.185 10.079 10.079 0 0 0 10.855 4.835 9.965 9.965 0 0 0 7.516 3.35 10.078 10.078 0 0 0 9.617-6.981 9.967 9.967 0 0 0 6.663-4.834 10.079 10.079 0 0 0-1.243-11.813zM22.498 37.886a7.474 7.474 0 0 1-4.799-1.735c.061-.033.168-.091.237-.134l7.964-4.6a1.294 1.294 0 0 0 .655-1.134V19.054l3.366 1.944a.12.12 0 0 1 .066.092v9.299a7.505 7.505 0 0 1-7.49 7.496zM6.392 31.006a7.471 7.471 0 0 1-.894-5.023c.06.036.162.099.237.141l7.964 4.6a1.297 1.297 0 0 0 1.308 0l9.724-5.614v3.888a.12.12 0 0 1-.048.103l-8.051 4.649a7.504 7.504 0 0 1-10.24-2.744zM4.297 13.62A7.469 7.469 0 0 1 8.2 10.333c0 .068-.004.19-.004.274v9.201a1.294 1.294 0 0 0 .654 1.132l9.723 5.614-3.366 1.944a.12.12 0 0 1-.114.012L7.044 23.86a7.504 7.504 0 0 1-2.747-10.24zm27.658 6.437l-9.724-5.615 3.367-1.943a.121.121 0 0 1 .114-.012l8.048 4.648a7.498 7.498 0 0 1-1.158 13.528v-9.476a1.293 1.293 0 0 0-.647-1.13zm3.35-5.043c-.059-.037-.162-.099-.236-.141l-7.965-4.6a1.298 1.298 0 0 0-1.308 0l-9.723 5.614v-3.888a.12.12 0 0 1 .048-.103l8.05-4.645a7.497 7.497 0 0 1 11.135 7.763zm-21.063 6.929l-3.367-1.944a.12.12 0 0 1-.065-.092v-9.299a7.497 7.497 0 0 1 12.293-5.756 6.94 6.94 0 0 0-.236.134l-7.965 4.6a1.294 1.294 0 0 0-.654 1.132l-.006 11.225zm1.829-3.943l4.33-2.501 4.332 2.497v4.998l-4.33 2.5-4.332-2.5V18z"/>
   </svg>`;
 }
 
-function renderMsg(text, type, files=[], index=-1, usedTool=null){
+function renderMsg(text, type, files=[], index=-1, usedTool=null, interactiveHtml=null){
   const chat=G('chat');
   const g=document.createElement('div');
   g.className='mg '+type;
@@ -1049,7 +1158,17 @@ function renderMsg(text, type, files=[], index=-1, usedTool=null){
     }
     bh.appendChild(bico); bh.appendChild(blbl);
     const bub=document.createElement('div'); bub.className='bub';
-    renderBubble(bub, text);
+
+    // Afficher le texte de la réponse s'il y en a
+    if(text && text.trim()){
+      renderBubble(bub, text);
+    }
+
+    // Afficher le widget interactif s'il y en a un
+    if(interactiveHtml){
+      createInteractiveWidget(interactiveHtml, bub);
+    }
+
     const ma=document.createElement('div'); ma.className='ma';
     const cp=makeBtn('Copier',`<svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`);
     cp.addEventListener('click',()=>copyText(text));
@@ -1104,12 +1223,19 @@ function renderBubble(bub, text){
   });
 }
 
-function addMsg(text, type, files=[], usedTool=null){
+function addMsg(text, type, files=[], usedTool=null, interactiveHtml=null){
   const chat=G('chat'), wel=G('welcome');
   chat.style.display='flex'; wel.style.display='none';
   const i=convs[curId].messages.length;
-  renderMsg(text,type,files,i,usedTool);
-  convs[curId].messages.push({role:type==='user'?'user':'assistant',content:text,files:files.map(f=>({name:f.name})),tool:usedTool});
+  renderMsg(text,type,files,i,usedTool,interactiveHtml);
+  convs[curId].messages.push({
+    role: type==='user'?'user':'assistant',
+    content: text,
+    files: files.map(f=>({name:f.name})),
+    tool: usedTool,
+    // On stocke le HTML interactif pour le rechargement (limité en taille)
+    interactiveHtml: interactiveHtml && interactiveHtml.length < 50000 ? interactiveHtml : null
+  });
   save();
 }
 
@@ -1117,12 +1243,16 @@ function addMsg(text, type, files=[], usedTool=null){
 // THINKING
 // ══════════════════════════════════════
 let thinkEl=null;
-function showThink(){
+function showThink(label=''){
   const chat=G('chat');
   thinkEl=document.createElement('div'); thinkEl.className='mg bot';
   const bh=document.createElement('div'); bh.className='bh';
   const bico=document.createElement('div'); bico.className='bico'; bico.innerHTML=logoSVG(15);
   const blbl=document.createElement('span'); blbl.className='blbl'; blbl.textContent='RokyGPT';
+  if(label){
+    const badge=document.createElement('span'); badge.className='tool-badge';
+    badge.textContent=label; blbl.appendChild(badge);
+  }
   bh.appendChild(bico); bh.appendChild(blbl);
   const dots=document.createElement('div'); dots.className='tdots';
   dots.innerHTML='<span></span><span></span><span></span>';
@@ -1147,7 +1277,8 @@ async function regen(idx){
   try{
     const r=await fetch('/chat',{method:'POST',body:fd});
     if(!r.ok) throw new Error(r.status);
-    const d=await r.json(); hideThink(); addMsg(d.reply||'Pas de réponse...','bot',[],d.tool||null);
+    const d=await r.json(); hideThink();
+    addMsg(d.reply||'Pas de réponse...','bot',[],d.tool||null,d.interactiveHtml||null);
   }catch(e){ hideThink(); addMsg('Erreur de régénération','bot'); }
 }
 
@@ -1162,7 +1293,6 @@ tin.addEventListener('input',()=>{
   snd.disabled=!tin.value.trim()&&fin.files.length===0;
 });
 
-// Focus input : scroll vers le bas après délai (clavier iOS)
 tin.addEventListener('focus',()=>{
   setTimeout(()=>{ G('chat-cont').scrollTop=G('chat-cont').scrollHeight; },300);
 });
@@ -1192,7 +1322,8 @@ async function send(){
   try{
     const r=await fetch('/chat',{method:'POST',body:fd});
     if(!r.ok) throw new Error(r.status);
-    const d=await r.json(); hideThink(); addMsg(d.reply||'Pas de réponse...','bot',[],d.tool||null);
+    const d=await r.json(); hideThink();
+    addMsg(d.reply||'Pas de réponse...','bot',[],d.tool||null,d.interactiveHtml||null);
   }catch(e){
     console.error(e); hideThink(); addMsg('Erreur de connexion — réessaie dans quelques secondes.','bot');
   }
@@ -1201,8 +1332,6 @@ async function send(){
 
 snd.onclick=send;
 tin.addEventListener('keydown',e=>{
-  // Sur mobile, Enter envoie seulement si Shift n'est pas pressé ET que c'est un vrai clavier physique
-  // Sur clavier virtuel, on ne bloque pas Enter pour ne pas gêner le saut de ligne
   if(e.key==='Enter'&&!e.shiftKey&&!('ontouchstart' in window)){
     e.preventDefault(); send();
   }
