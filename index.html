@@ -342,7 +342,7 @@
       100%{background-position:-200% center}
     }
 
-    /* ══ MODE SELECTOR — nouveau bouton pill ══ */
+    /* ══ MODE SELECTOR — dropdown en position fixed pour dépasser la zone d'input ══ */
     #mode-selector { position:relative; }
     #mode-pill-btn {
       display:flex; align-items:center; gap:6px;
@@ -362,13 +362,14 @@
     }
     #mode-pill-btn.open .mode-arrow{transform:rotate(180deg)}
 
+    /* FIX : position fixed pour sortir du overflow:hidden parent */
     #mode-dropdown {
-      position:absolute; bottom:calc(100% + 8px); left:0;
+      position:fixed;
       background:var(--modbg); border:1px solid var(--bdr);
-      border-radius:12px; padding:6px; min-width:200px;
-      box-shadow:0 8px 32px rgba(0,0,0,.45);
+      border-radius:12px; padding:6px; min-width:220px;
+      box-shadow:0 8px 32px rgba(0,0,0,.55);
       display:none; flex-direction:column; gap:2px;
-      z-index:200;
+      z-index:9999;
       animation:dropUp .18s ease;
     }
     @keyframes dropUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
@@ -397,8 +398,32 @@
     #input-box{background:var(--inp);border-radius:16px;display:flex;flex-direction:column;overflow:hidden;border:1px solid transparent;transition:border-color .15s}
     #input-box:focus-within{border-color:rgba(255,255,255,.14)}
     body.light #input-box:focus-within{border-color:rgba(0,0,0,.15)}
+
+    /* FIX : chips de fichiers avec croix et troncature */
     #fchips{display:flex;flex-wrap:wrap;gap:6px;padding:8px 12px 0}
-    .fchip{display:flex;align-items:center;gap:5px;padding:4px 10px;background:var(--hov);border-radius:20px;font-size:13px;color:var(--sub)}
+    .fchip{
+      display:flex;align-items:center;gap:5px;
+      padding:4px 6px 4px 10px;
+      background:var(--hov);border-radius:20px;
+      font-size:12px;color:var(--sub);
+      max-width:160px;
+    }
+    .fchip-name{
+      overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+      flex:1;min-width:0;
+    }
+    .fchip-del{
+      flex-shrink:0;
+      background:none;border:none;
+      color:var(--muted);cursor:pointer;
+      padding:1px 3px;border-radius:4px;
+      font-size:13px;line-height:1;
+      display:flex;align-items:center;justify-content:center;
+      transition:color .12s,background .12s;
+      -webkit-tap-highlight-color:transparent;
+    }
+    .fchip-del:hover{color:var(--red);background:rgba(239,68,68,.1)}
+
     #tinput{flex:1;background:transparent;border:none;color:var(--txt);font-size:16px;resize:none;min-height:44px;max-height:160px;outline:none;padding:12px 14px 4px;font-family:inherit;line-height:1.5;-webkit-tap-highlight-color:transparent}
     #tinput::placeholder{color:var(--muted)}
     #input-bot{display:flex;align-items:center;padding:4px 8px 6px;gap:4px}
@@ -454,50 +479,24 @@
     .tcard .tname{font-weight:600;color:var(--acc);margin-bottom:3px}
     .tcard .tdesc{color:var(--sub);font-size:12px}
 
-    /* ══ PLANS — page abonnements améliorée ══ */
+    /* ══ PLANS ══ */
     .plans-mod { max-width:640px !important; }
-    .plans-hero {
-      text-align:center;
-      padding:8px 0 24px;
-    }
+    .plans-hero { text-align:center; padding:8px 0 24px; }
     .plans-hero h2 { font-size:26px; font-weight:800; margin-bottom:6px; }
     .plans-hero p { font-size:14px; color:var(--muted); }
-    .plans-toggle {
-      display:flex; align-items:center; justify-content:center;
-      gap:10px; margin-bottom:24px;
-    }
+    .plans-toggle { display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:24px; }
     .plans-toggle span { font-size:13px; color:var(--muted); }
     .plans-toggle span.active { color:var(--txt); font-weight:600; }
-    .billing-tog {
-      width:40px; height:22px; background:var(--bdr); border-radius:11px;
-      position:relative; cursor:pointer; transition:background .2s; border:none; flex-shrink:0;
-    }
+    .billing-tog { width:40px; height:22px; background:var(--bdr); border-radius:11px; position:relative; cursor:pointer; transition:background .2s; border:none; flex-shrink:0; }
     .billing-tog.on { background:var(--acc); }
     .billing-tog::after { content:''; width:16px; height:16px; background:#fff; border-radius:50%; position:absolute; top:3px; left:3px; transition:transform .2s; }
     .billing-tog.on::after { transform:translateX(18px); }
-    .save-badge {
-      background:rgba(var(--acc-rgb),.15); color:var(--acc);
-      font-size:10px; font-weight:700; padding:2px 6px; border-radius:6px;
-    }
-    .plans-grid {
-      display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:20px;
-    }
-    .plan-card {
-      border:1px solid var(--bdr); border-radius:16px; padding:20px 16px;
-      text-align:center; cursor:pointer; transition:all .2s; position:relative;
-      -webkit-tap-highlight-color:transparent; display:flex; flex-direction:column;
-    }
+    .save-badge { background:rgba(var(--acc-rgb),.15); color:var(--acc); font-size:10px; font-weight:700; padding:2px 6px; border-radius:6px; }
+    .plans-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:20px; }
+    .plan-card { border:1px solid var(--bdr); border-radius:16px; padding:20px 16px; text-align:center; cursor:pointer; transition:all .2s; position:relative; -webkit-tap-highlight-color:transparent; display:flex; flex-direction:column; }
     .plan-card:hover { border-color:var(--acc); transform:translateY(-2px); box-shadow:0 8px 24px rgba(0,0,0,.25); }
-    .plan-card.popular {
-      border-color:var(--acc); background:rgba(var(--acc-rgb),.07);
-      transform:translateY(-4px); box-shadow:0 8px 32px rgba(var(--acc-rgb),.2);
-    }
-    .plan-badge {
-      position:absolute; top:-12px; left:50%; transform:translateX(-50%);
-      background:linear-gradient(135deg,var(--acc),rgba(var(--acc-rgb),.6));
-      color:#fff; font-size:11px; font-weight:700; padding:3px 12px;
-      border-radius:20px; white-space:nowrap; box-shadow:0 2px 8px rgba(var(--acc-rgb),.4);
-    }
+    .plan-card.popular { border-color:var(--acc); background:rgba(var(--acc-rgb),.07); transform:translateY(-4px); box-shadow:0 8px 32px rgba(var(--acc-rgb),.2); }
+    .plan-badge { position:absolute; top:-12px; left:50%; transform:translateX(-50%); background:linear-gradient(135deg,var(--acc),rgba(var(--acc-rgb),.6)); color:#fff; font-size:11px; font-weight:700; padding:3px 12px; border-radius:20px; white-space:nowrap; box-shadow:0 2px 8px rgba(var(--acc-rgb),.4); }
     .plan-icon { font-size:28px; margin-bottom:8px; display:block; }
     .plan-name { font-size:15px; font-weight:700; color:var(--txt); margin-bottom:4px; }
     .plan-desc { font-size:12px; color:var(--muted); margin-bottom:14px; line-height:1.4; min-height:32px; }
@@ -506,33 +505,15 @@
     .plan-price-annual { font-size:28px; }
     .plan-period { font-size:12px; color:var(--muted); margin-top:2px; }
     .plan-annual-note { font-size:11px; color:var(--acc); margin-top:3px; font-weight:500; }
-    .plan-features {
-      list-style:none; text-align:left; font-size:13px; color:var(--sub);
-      flex:1; margin-bottom:16px;
-    }
-    .plan-features li {
-      display:flex; align-items:flex-start; gap:6px;
-      padding:5px 0; border-bottom:1px solid rgba(255,255,255,.04);
-    }
+    .plan-features { list-style:none; text-align:left; font-size:13px; color:var(--sub); flex:1; margin-bottom:16px; }
+    .plan-features li { display:flex; align-items:flex-start; gap:6px; padding:5px 0; border-bottom:1px solid rgba(255,255,255,.04); }
     .plan-features li:last-child { border-bottom:none; }
     .plan-features .fi { color:var(--acc); flex-shrink:0; font-size:13px; margin-top:1px; }
-    .plan-btn {
-      display:block; width:100%; padding:11px;
-      border-radius:10px; border:none;
-      background:var(--acc); color:#fff;
-      font-size:14px; font-weight:600; cursor:pointer;
-      font-family:inherit; transition:all .15s; margin-top:auto;
-    }
+    .plan-btn { display:block; width:100%; padding:11px; border-radius:10px; border:none; background:var(--acc); color:#fff; font-size:14px; font-weight:600; cursor:pointer; font-family:inherit; transition:all .15s; margin-top:auto; }
     .plan-btn:hover { opacity:.88; transform:scale(1.02); }
-    .plan-card:not(.popular) .plan-btn {
-      background:transparent; border:1px solid var(--bdr); color:var(--txt);
-    }
-    .plan-card:not(.popular) .plan-btn:hover {
-      border-color:var(--acc); color:var(--acc); background:rgba(var(--acc-rgb),.07);
-    }
-    .plans-footer {
-      text-align:center; font-size:12px; color:var(--muted); margin-bottom:8px;
-    }
+    .plan-card:not(.popular) .plan-btn { background:transparent; border:1px solid var(--bdr); color:var(--txt); }
+    .plan-card:not(.popular) .plan-btn:hover { border-color:var(--acc); color:var(--acc); background:rgba(var(--acc-rgb),.07); }
+    .plans-footer { text-align:center; font-size:12px; color:var(--muted); margin-bottom:8px; }
     .plans-footer a { color:var(--acc); text-decoration:none; }
 
     /* ── Couleur accent ── */
@@ -579,7 +560,6 @@
       .plan-card.popular{transform:none}
       .plan-card:hover{transform:none}
       .interactive-iframe{max-height:none}
-      #mode-dropdown{left:auto;right:0}
     }
     @media(max-width:380px){.sugs{grid-template-columns:1fr}#tinput{font-size:16px}}
     @media(max-height:500px) and (orientation:landscape){
@@ -675,38 +655,13 @@
             Joindre
           </label>
 
-          <!-- Nouveau sélecteur de mode -->
+          <!-- Sélecteur de mode -->
           <div id="mode-selector">
             <button id="mode-pill-btn" onclick="toggleModeDropdown(event)">
               <span id="mode-pill-label">⚡ Fast</span>
               <svg class="mode-arrow" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
             </button>
-            <div id="mode-dropdown">
-              <button class="mode-opt active" data-mode="fast" onclick="setMode('fast')">
-                <span class="mo-icon">⚡</span>
-                <span class="mo-info">
-                  <span class="mo-name">Fast</span>
-                  <span class="mo-desc">Réponse immédiate</span>
-                </span>
-                <span class="mo-check">✓</span>
-              </button>
-              <button class="mode-opt" data-mode="balanced" onclick="setMode('balanced')">
-                <span class="mo-icon">⚖️</span>
-                <span class="mo-info">
-                  <span class="mo-name">Balanced</span>
-                  <span class="mo-desc">Vitesse & précision</span>
-                </span>
-                <span class="mo-check">✓</span>
-              </button>
-              <button class="mode-opt" data-mode="thinking" onclick="setMode('thinking')">
-                <span class="mo-icon">🧠</span>
-                <span class="mo-info">
-                  <span class="mo-name">Thinking</span>
-                  <span class="mo-desc">Analyse complète, peut prendre quelques secondes</span>
-                </span>
-                <span class="mo-check">✓</span>
-              </button>
-            </div>
+            <!-- Le dropdown est dans le body pour éviter les problèmes d'overflow -->
           </div>
 
           <button id="send-btn" disabled>
@@ -718,6 +673,34 @@
     </div>
   </div>
 </main>
+
+<!-- MODE DROPDOWN — en dehors du flux pour dépasser la zone d'input -->
+<div id="mode-dropdown">
+  <button class="mode-opt active" data-mode="fast" onclick="setMode('fast')">
+    <span class="mo-icon">⚡</span>
+    <span class="mo-info">
+      <span class="mo-name">Fast</span>
+      <span class="mo-desc">Réponse immédiate</span>
+    </span>
+    <span class="mo-check">✓</span>
+  </button>
+  <button class="mode-opt" data-mode="balanced" onclick="setMode('balanced')">
+    <span class="mo-icon">⚖️</span>
+    <span class="mo-info">
+      <span class="mo-name">Balanced</span>
+      <span class="mo-desc">Vitesse & précision</span>
+    </span>
+    <span class="mo-check">✓</span>
+  </button>
+  <button class="mode-opt" data-mode="thinking" onclick="setMode('thinking')">
+    <span class="mo-icon">🧠</span>
+    <span class="mo-info">
+      <span class="mo-name">Thinking</span>
+      <span class="mo-desc">Analyse complète, peut prendre quelques secondes</span>
+    </span>
+    <span class="mo-check">✓</span>
+  </button>
+</div>
 
 <!-- MODAL AUTH -->
 <div id="mod-auth" class="ov open">
@@ -829,23 +812,20 @@
   </div>
 </div>
 
-<!-- MODAL ABONNEMENTS — améliorée -->
+<!-- MODAL ABONNEMENTS -->
 <div id="mod-sub" class="ov">
   <div class="mod plans-mod">
     <div class="plans-hero">
       <h2>⚡ Passez à la vitesse supérieure</h2>
       <p>Choisissez le plan qui correspond à vos besoins</p>
     </div>
-
     <div class="plans-toggle">
       <span class="active" id="billing-monthly-lbl">Mensuel</span>
       <button class="billing-tog" id="billing-tog" onclick="toggleBilling()"></button>
       <span id="billing-annual-lbl">Annuel</span>
       <span class="save-badge" id="save-badge">−20%</span>
     </div>
-
     <div class="plans-grid">
-      <!-- Starter -->
       <div class="plan-card">
         <span class="plan-icon">🌱</span>
         <div class="plan-name">Starter</div>
@@ -863,8 +843,6 @@
         </ul>
         <button class="plan-btn" onclick="goStripe('starter')">Commencer</button>
       </div>
-
-      <!-- Pro (populaire) -->
       <div class="plan-card popular">
         <div class="plan-badge">⭐ Le plus populaire</div>
         <span class="plan-icon">🚀</span>
@@ -884,8 +862,6 @@
         </ul>
         <button class="plan-btn" onclick="goStripe('pro')">Choisir Pro</button>
       </div>
-
-      <!-- Ultra -->
       <div class="plan-card">
         <span class="plan-icon">💎</span>
         <div class="plan-name">Ultra</div>
@@ -905,11 +881,9 @@
         <button class="plan-btn" onclick="goStripe('ultra')">Choisir Ultra</button>
       </div>
     </div>
-
     <div class="plans-footer">
       🔒 Paiement sécurisé via Stripe &nbsp;·&nbsp; Annulation à tout moment &nbsp;·&nbsp; <a href="#">CGU</a>
     </div>
-
     <button class="mb g" onclick="closeSub()">Peut-être plus tard</button>
   </div>
 </div>
@@ -973,18 +947,25 @@ let currentMode = localStorage.getItem('rky-mode') || 'fast';
 let annualBilling = false;
 
 /* ══════════════════════════════════════════════════════
-   MODE SELECTOR
+   MODE SELECTOR — dropdown en position fixed, positionné via JS
 ══════════════════════════════════════════════════════ */
+function positionModeDropdown() {
+  const btn = G('mode-pill-btn');
+  const dd = G('mode-dropdown');
+  const rect = btn.getBoundingClientRect();
+  const ddHeight = 180; // hauteur estimée du dropdown
+  const top = rect.top - ddHeight - 8;
+  dd.style.top = Math.max(8, top) + 'px';
+  dd.style.left = rect.left + 'px';
+}
+
 function setMode(mode) {
   currentMode = mode;
   localStorage.setItem('rky-mode', mode);
-  // Mettre à jour le bouton pill
   G('mode-pill-label').textContent = MODE_LABELS[mode];
-  // Mettre à jour les options
   document.querySelectorAll('.mode-opt').forEach(b => {
     b.classList.toggle('active', b.dataset.mode === mode);
   });
-  // Fermer le dropdown
   G('mode-dropdown').classList.remove('open');
   G('mode-pill-btn').classList.remove('open');
 }
@@ -994,11 +975,13 @@ function toggleModeDropdown(e) {
   const dd = G('mode-dropdown');
   const btn = G('mode-pill-btn');
   const isOpen = dd.classList.contains('open');
+  if (!isOpen) {
+    positionModeDropdown();
+  }
   dd.classList.toggle('open', !isOpen);
   btn.classList.toggle('open', !isOpen);
 }
 
-// Fermer le dropdown si on clique ailleurs
 document.addEventListener('click', () => {
   G('mode-dropdown').classList.remove('open');
   G('mode-pill-btn').classList.remove('open');
@@ -1061,6 +1044,16 @@ function copyText(text){
 }
 
 function escH(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML}
+
+/* Tronque un nom de fichier : garde début + extension */
+function truncateFileName(name, maxLen=22) {
+  if(name.length <= maxLen) return name;
+  const dot = name.lastIndexOf('.');
+  const ext = dot > 0 ? name.slice(dot) : '';
+  const base = dot > 0 ? name.slice(0, dot) : name;
+  const keep = maxLen - ext.length - 1;
+  return base.slice(0, Math.max(keep, 4)) + '…' + ext;
+}
 
 let _cr=null;
 function askConfirm(title,msg){
@@ -1377,31 +1370,28 @@ function autoTitle(text){
 }
 
 /* ══════════════════════════════════════════════════════
-   VALIDATION DATE — vérifie que la réponse est récente
+   VALIDATION DATE
 ══════════════════════════════════════════════════════ */
 function getTodayStrings() {
   const now = new Date();
   const year = now.getFullYear();
-  const month = now.getMonth(); // 0-based
+  const month = now.getMonth();
   const day = now.getDate();
   const MONTHS_FR = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
   const MONTHS_EN = ['january','february','march','april','may','june','july','august','september','october','november','december'];
   return {
-    year,
-    yearStr: String(year),
-    monthFR: MONTHS_FR[month],
-    monthEN: MONTHS_EN[month],
+    year, yearStr: String(year),
+    monthFR: MONTHS_FR[month], monthEN: MONTHS_EN[month],
     dayStr: String(day),
     iso: `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`
   };
 }
 
 function responseNeedsDateCheck(reply) {
-  // Vérifie si la réponse contient des mentions de dates ou d'actualités
   const triggers = [
     /\b(aujourd'hui|today|actuellement|currently|en ce moment|right now|cette semaine|this week|ce mois|this month)\b/i,
     /\b(dernièr|latest|récent|recent|nouveau|new|vient de|just|breaking)\b/i,
-    /\b(20\d\d)\b/, // any year 2000-2099
+    /\b(20\d\d)\b/,
     /\b(lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche|monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b/i
   ];
   return triggers.some(r => r.test(reply));
@@ -1409,7 +1399,6 @@ function responseNeedsDateCheck(reply) {
 
 function isDateConsistent(reply) {
   const td = getTodayStrings();
-  // Si la réponse mentionne une année différente de cette année ou l'année précédente, c'est suspect
   const yearMatches = reply.match(/\b(20\d\d)\b/g);
   if (yearMatches) {
     const hasWrongYear = yearMatches.some(y => {
@@ -1624,7 +1613,7 @@ function startEdit(msgEl, originalText, index){
 }
 
 /* ══════════════════════════════════════════════════════
-   THINKING — avec animation de statut
+   THINKING
 ══════════════════════════════════════════════════════ */
 let thinkEl=null;
 let statusInterval=null;
@@ -1645,7 +1634,6 @@ function showThink(label=''){
   }
   bh.appendChild(bico); bh.appendChild(blbl);
 
-  // Statut animé avec dégradé
   const statusEl=document.createElement('div'); statusEl.className='think-status';
   const msgs = getStatusMessages();
   statusEl.textContent = msgs[0];
@@ -1660,7 +1648,6 @@ function showThink(label=''){
   chat.appendChild(thinkEl);
   G('chat-cont').scrollTop=G('chat-cont').scrollHeight;
 
-  // Rotation des messages de statut
   statusIndex = 0;
   clearInterval(statusInterval);
   const interval = currentMode === 'thinking' ? 2200 : currentMode === 'balanced' ? 2800 : 3500;
@@ -1679,7 +1666,6 @@ function showThink(label=''){
     }
   }, interval);
 
-  // Style de transition pour le texte
   statusEl.style.transition = 'opacity 0.3s ease';
 }
 
@@ -1699,7 +1685,7 @@ function updateThinkLabel(label){
 }
 
 /* ══════════════════════════════════════════════════════
-   RETRY avec vérification de date — 5 tentatives max
+   RETRY
 ══════════════════════════════════════════════════════ */
 async function fetchWithRetry(fd, maxRetries=5){
   for(let attempt=1; attempt<=maxRetries; attempt++){
@@ -1715,12 +1701,10 @@ async function fetchWithRetry(fd, maxRetries=5){
       const d = await r.json();
       const reply = d.reply || '';
 
-      // Vérification de cohérence de date
       if(responseNeedsDateCheck(reply) && !isDateConsistent(reply)){
         if(attempt < maxRetries){
           const td = getTodayStrings();
           updateThinkLabel(`Vérification des données (${attempt}/${maxRetries})…`);
-          // Ajouter contexte de date à la requête suivante
           const newFd = new FormData();
           for(const [k,v] of fd.entries()) newFd.append(k,v);
           newFd.set('date_hint', `Nous sommes le ${td.dayStr} ${td.monthFR} ${td.year}. Assure-toi que ta réponse est cohérente avec cette date.`);
@@ -1758,25 +1742,62 @@ async function regen(idx){
 }
 
 /* ══════════════════════════════════════════════════════
-   INPUT & SEND
+   INPUT & SEND — avec gestion des fichiers améliorée
 ══════════════════════════════════════════════════════ */
 const tin=G('tinput'),snd=G('send-btn'),fin=G('files');
+
+// Liste de fichiers mutable (pour permettre la suppression individuelle)
+let selectedFiles = [];
+
+function updateSendBtn(){
+  snd.disabled = !tin.value.trim() && selectedFiles.length === 0;
+}
+
+function renderFileChips(){
+  const chips = G('fchips');
+  chips.innerHTML = '';
+  selectedFiles.forEach((f, i) => {
+    const chip = document.createElement('div');
+    chip.className = 'fchip';
+    const nameEl = document.createElement('span');
+    nameEl.className = 'fchip-name';
+    nameEl.title = f.name; // tooltip avec le nom complet
+    nameEl.textContent = truncateFileName(f.name);
+    const delBtn = document.createElement('button');
+    delBtn.className = 'fchip-del';
+    delBtn.title = 'Supprimer ce fichier';
+    delBtn.innerHTML = '×';
+    delBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      selectedFiles.splice(i, 1);
+      renderFileChips();
+      updateSendBtn();
+    });
+    chip.appendChild(nameEl);
+    chip.appendChild(delBtn);
+    chips.appendChild(chip);
+  });
+}
 
 tin.addEventListener('input',()=>{
   tin.style.height='auto';
   tin.style.height=Math.min(tin.scrollHeight,160)+'px';
-  snd.disabled=!tin.value.trim()&&fin.files.length===0;
+  updateSendBtn();
 });
 tin.addEventListener('focus',()=>{
   setTimeout(()=>{G('chat-cont').scrollTop=G('chat-cont').scrollHeight},300);
 });
+
 fin.addEventListener('change',()=>{
-  const chips=G('fchips'); chips.innerHTML='';
-  Array.from(fin.files).forEach(f=>{
-    const c=document.createElement('div'); c.className='fchip';
-    c.innerHTML=`📎 <span>${escH(f.name)}</span>`; chips.appendChild(c);
+  // Ajouter les nouveaux fichiers à la liste existante (évite les doublons par nom)
+  Array.from(fin.files).forEach(f => {
+    if(!selectedFiles.some(sf => sf.name === f.name && sf.size === f.size)) {
+      selectedFiles.push(f);
+    }
   });
-  snd.disabled=!tin.value.trim()&&fin.files.length===0;
+  fin.value = ''; // reset l'input pour permettre re-sélection du même fichier
+  renderFileChips();
+  updateSendBtn();
 });
 
 function fill(text){tin.value=text;tin.dispatchEvent(new Event('input'));tin.focus()}
@@ -1801,12 +1822,16 @@ async function sendToAPI(msg, files){
 }
 
 async function send(){
-  const msg=tin.value.trim(),files=Array.from(fin.files);
+  const msg=tin.value.trim();
+  const files=[...selectedFiles];
   if(!msg&&!files.length) return;
   await doSync();
   addMsg(msg,'user',files);
   autoTitle(msg);
-  tin.value=''; tin.style.height='auto'; fin.value=''; G('fchips').innerHTML='';
+  tin.value=''; tin.style.height='auto';
+  selectedFiles=[];
+  renderFileChips();
+  updateSendBtn();
   await sendToAPI(msg,files);
 }
 
