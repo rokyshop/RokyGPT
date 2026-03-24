@@ -296,6 +296,7 @@
       color:var(--acc);font-size:11px;font-weight:600;
       margin-left:8px;vertical-align:middle;
     }
+    
     .mg.bot .bub{font-size:15px;line-height:1.7;width:100%;word-break:break-word;overflow-wrap:break-word}
     .mg.bot .bub p{margin:0 0 10px}
     .mg.bot .bub p:last-child{margin:0}
@@ -306,6 +307,18 @@
     .mg.bot .bub a{color:var(--acc);text-decoration:none}
     .mg.bot .bub a:hover{text-decoration:underline}
     .mg.bot .bub pre{background:var(--codebg);border-radius:10px;overflow:hidden;margin:10px 0;max-width:100%}
+    .mode-badge {
+      display:inline-flex;align-items:center;gap:4px;
+      padding:2px 8px;border-radius:10px;
+      background:rgba(255,255,255,.1);
+      border:1px solid rgba(255,255,255,.15);
+      color:var(--sub);font-size:11px;font-weight:600;
+      margin-left:8px;vertical-align:middle;
+    }
+    body.light .mode-badge {
+      background:rgba(0,0,0,.06);
+      border-color:rgba(0,0,0,.1);
+    }
     .chdr {
       display:flex;align-items:center;justify-content:space-between;
       padding:7px 12px;background:rgba(255,255,255,.05);
@@ -590,6 +603,11 @@
             <svg viewBox="0 0 24 24"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
             Joindre
           </label>
+          <div id="mode-selector">
+            <button class="mode-btn active" data-mode="fast"      onclick="setMode('fast')">     <span class="mode-dot"></span>⚡ Fast</button>
+            <button class="mode-btn"        data-mode="balanced"  onclick="setMode('balanced')"> <span class="mode-dot"></span>⚖️ Balanced</button>
+            <button class="mode-btn"        data-mode="thinking"  onclick="setMode('thinking')"> <span class="mode-dot"></span>🧠 Thinking</button>
+          </div>
           <button id="send-btn" disabled>
             <svg viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
           </button>
@@ -814,7 +832,21 @@
    Pour le logo/icône IA, voir la fonction botIconHTML() plus bas.
 ══════════════════════════════════════════════════════ */
 const APP_NAME = 'RokyGPT';
+/* ══════════════════════════════════════════════════════
+   MODES
+══════════════════════════════════════════════════════ */
+const MODE_LABELS = { fast: '⚡ Fast', balanced: '⚖️ Balanced', thinking: '🧠 Thinking' };
+let currentMode = localStorage.getItem('rky-mode') || 'fast';
 
+function setMode(mode) {
+  currentMode = mode;
+  localStorage.setItem('rky-mode', mode);
+  document.querySelectorAll('.mode-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.mode === mode);
+  });
+}
+// Applique le mode sauvegardé au chargement
+setTimeout(() => setMode(currentMode), 0);
 /* ── Injection du nom partout ── */
 document.querySelectorAll('[id="app-name-pill"], #auth-app-name').forEach(el => el.textContent = APP_NAME);
 document.title = APP_NAME;
@@ -1283,7 +1315,7 @@ const htmlWithResize=html.replace('</body>',`
 /* ══════════════════════════════════════════════════════
    RENDER MESSAGES
 ══════════════════════════════════════════════════════ */
-function renderMsg(text, type, files=[], index=-1, usedTool=null, interactiveHtml=null){
+function renderMsg(text, type, files=[], index=-1, usedTool=null, interactiveHtml=null, mode=null){
   const chat=G('chat');
   const g=document.createElement('div'); g.className='mg '+type;
 
@@ -1308,11 +1340,17 @@ function renderMsg(text, type, files=[], index=-1, usedTool=null, interactiveHtm
   } else {
     const bh=document.createElement('div'); bh.className='bh';
     const bico=document.createElement('div'); bico.className='bico'; bico.innerHTML=botIconHTML(15);
-    const blbl=document.createElement('span'); blbl.className='blbl'; blbl.textContent=APP_NAME;
+    const blbl=document.createElement('span'); blbl.className='blbl'; blbl.textContent = APP_NAME;
     if(usedTool){
       const badge=document.createElement('span'); badge.className='tool-badge';
       badge.textContent=(TOOL_ICONS[usedTool]||'🔧')+' '+(TOOL_LABELS[usedTool]||usedTool);
       blbl.appendChild(badge);
+    }
+    if(mode && mode !== 'fast'){
+      const mb = document.createElement('span');
+      mb.className = 'mode-badge';
+      mb.textContent = MODE_LABELS[mode] || mode;
+      blbl.appendChild(mb);
     }
     bh.appendChild(bico); bh.appendChild(blbl);
     const bub=document.createElement('div'); bub.className='bub';
@@ -1372,17 +1410,18 @@ function renderBubble(bub,text){
   });
 }
 
-function addMsg(text,type,files=[],usedTool=null,interactiveHtml=null){
+function addMsg(text,type,files=[],usedTool=null,interactiveHtml=null,mode=null){
   const chat=G('chat'),wel=G('welcome');
   chat.style.display='flex'; wel.style.display='none';
   const i=convs[curId].messages.length;
-  renderMsg(text,type,files,i,usedTool,interactiveHtml);
+  renderMsg(text,type,files,i,usedTool,interactiveHtml,mode);
   convs[curId].messages.push({
     role:type==='user'?'user':'assistant',
     content:text,
     files:files.map(f=>({name:f.name})),
     tool:usedTool,
-    interactiveHtml:interactiveHtml&&interactiveHtml.length<60000?interactiveHtml:null
+    interactiveHtml:interactiveHtml&&interactiveHtml.length<60000?interactiveHtml:null,
+    mode:mode
   });
   save();
 }
@@ -1518,14 +1557,16 @@ function fill(text){tin.value=text;tin.dispatchEvent(new Event('input'));tin.foc
 async function sendToAPI(msg, files){
   showThink(); snd.disabled=true;
   const fd=new FormData();
-  fd.append('message',msg); fd.append('userId',curId);
+  fd.append('message',msg); 
+  fd.append('userId',curId);
+  fd.append('mode', currentMode);
   // Injecte les mémoires dans le form
   const memories=getMemories();
   if(memories.length) fd.append('memories',JSON.stringify(memories));
   files.forEach(f=>fd.append('files',f));
   try{
     const d=await fetchWithRetry(fd);
-    hideThink(); addMsg(d.reply||'Pas de réponse…','bot',[],d.tool||null,d.interactiveHtml||null);
+    hideThink(); addMsg(d.reply||'Pas de réponse…','bot',[],d.tool||null,d.interactiveHtml||null,currentMode);
   }catch(e){
     console.error(e); hideThink();
     addMsg('❌ Impossible de joindre le serveur après plusieurs tentatives. Vérifie ta connexion et réessaie.','bot');
