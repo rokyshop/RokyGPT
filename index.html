@@ -1205,22 +1205,57 @@ function createInteractiveWidget(html, container){
   iframe.style.height='300px';
 
   /* Injecte script d'auto-resize SANS max-height — l'iframe grandit librement */
-  const htmlWithResize=html.replace('</body>',`
+const htmlWithResize=html.replace('</body>',`
 <script>
+  // Fixe overflow hidden pour éviter la rétroaction
+  document.documentElement.style.overflow = 'hidden';
+  document.body.style.overflow = 'hidden';
+
+  let lastSent = 0;
+  let stable = 0;
+  let ro = null;
+
   function sendHeight(){
-    const h = Math.max(
-      document.body.scrollHeight,
-      document.documentElement.scrollHeight,
-      document.body.offsetHeight,
-      document.documentElement.offsetHeight
-    );
-    window.parent.postMessage({type:'rky-resize',height:h},'*');
+    // On mesure le contenu réel, pas scrollHeight (qui inclut l'espace de l'iframe)
+    const els = document.body.children;
+    let maxBottom = 0;
+    for(let i = 0; i < els.length; i++){
+      const r = els[i].getBoundingClientRect();
+      if(r.bottom > maxBottom) maxBottom = r.bottom;
+    }
+    // fallback si pas d'enfants
+    const h = Math.max(maxBottom, document.body.offsetHeight, 50);
+    const rounded = Math.ceil(h);
+    if(rounded === lastSent) return; // rien de changé → on n'envoie pas
+    lastSent = rounded;
+    window.parent.postMessage({type:'rky-resize',height:rounded},'*');
   }
-  new ResizeObserver(sendHeight).observe(document.body);
-  new MutationObserver(sendHeight).observe(document.body,{childList:true,subtree:true,attributes:true});
-  window.addEventListener('load',sendHeight);
-  // Plusieurs tentatives pour les composants qui chargent des libs (Chart.js, D3...)
-  [100,300,600,1200,2000].forEach(ms=>setTimeout(sendHeight,ms));
+
+  function startObserving(){
+    if(ro) ro.disconnect();
+    ro = new ResizeObserver(()=>{
+      // Debounce : on attend que la taille soit stable 2 fois de suite
+      clearTimeout(stable);
+      stable = setTimeout(sendHeight, 50);
+    });
+    // Observer chaque enfant direct du body, pas le body lui-même
+    // (évite la rétroaction body → iframe → body)
+    Array.from(document.body.children).forEach(el => ro.observe(el));
+  }
+
+  window.addEventListener('load', ()=>{
+    startObserving();
+    sendHeight();
+    // Quelques vérifications tardives pour les libs async (Chart.js, D3…)
+    [200, 500, 1000, 2000].forEach(ms => setTimeout(sendHeight, ms));
+  });
+
+  // Si du contenu est ajouté dynamiquement, re-observer
+  new MutationObserver(()=>{
+    startObserving();
+    clearTimeout(stable);
+    stable = setTimeout(sendHeight, 50);
+  }).observe(document.body, {childList:true});
 <\/script>
 </body>`);
 
