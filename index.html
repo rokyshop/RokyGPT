@@ -3,31 +3,20 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
-  <!-- ╔══════════════════════════════════════╗
-       ║  CHANGER LE NOM ICI  ↓              ║
-       ╚══════════════════════════════════════╝ -->
   <title id="app-title-tag">RokyGPT</title>
   <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked@14/marked.min.js"></script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1/themes/prism-tomorrow.min.css"/>
   <script src="https://cdn.jsdelivr.net/npm/prismjs@1/prism.min.js"></script>
   <style>
-    /* ══════════════════════════════════════════
-       CONFIG GLOBALE — CHANGER ICI POUR RENOMMER
-       APP_NAME = nom affiché partout
-    ══════════════════════════════════════════ */
-
     :root {
       --bg:#212121; --sb:#171717; --ubub:#2f2f2f;
       --txt:#ececec; --muted:#8e8ea0; --sub:#b4b4b4;
       --bdr:#3d3d3d; --hov:rgba(255,255,255,.07); --act:rgba(255,255,255,.11);
       --inp:#2f2f2f;
-      /* ── COULEUR D'ACCENTUATION (modifiable dans Paramètres > Personnalisation) ── */
       --acc:#10a37f;
-      --acc-rgb:16,163,127; /* pour les rgba() */
-      /* couleur bulle utilisateur */
+      --acc-rgb:16,163,127;
       --ubub-color:#2f2f2f;
-      /* couleur bulle ia (fond léger) */
       --ia-acc-bg:rgba(16,163,127,.08);
       --ia-acc-bdr:rgba(16,163,127,.25);
       --btnbg:#fff; --btntxt:#212121;
@@ -37,7 +26,6 @@
       --safe-bot:env(safe-area-inset-bottom,0px);
       --safe-l:env(safe-area-inset-left,0px);
       --safe-r:env(safe-area-inset-right,0px);
-      /* sidebar collapsed width */
       --sb-collapsed:56px;
     }
     body.light {
@@ -60,9 +48,7 @@
     ::-webkit-scrollbar-track{background:transparent}
     ::-webkit-scrollbar-thumb{background:var(--scr);border-radius:2px}
 
-    /* ══════════════════════════════════════════
-       SIDEBAR
-    ══════════════════════════════════════════ */
+    /* ══ SIDEBAR ══ */
     #sidebar {
       width:260px; flex-shrink:0; background:var(--sb);
       display:flex; flex-direction:column; padding:8px;
@@ -70,14 +56,11 @@
       transition:width .22s cubic-bezier(.4,0,.2,1);
     }
     #sidebar.collapsed { width:var(--sb-collapsed); }
-
     #sb-top {
       display:flex; align-items:center; gap:4px;
       padding:4px 2px 8px; padding-top:calc(4px + var(--safe-top));
       overflow:hidden;
     }
-
-    /* Bouton icône générique */
     .ib {
       width:40px; height:40px; border-radius:8px; border:none;
       background:transparent; color:var(--sub); cursor:pointer;
@@ -87,8 +70,6 @@
     }
     .ib:hover,.ib:active{background:var(--hov);color:var(--txt)}
     .ib svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-
-    /* éléments qui disparaissent en mode collapsed */
     #sidebar.collapsed .sb-hide { display:none !important; }
     #sidebar.collapsed #search-wrap { display:none !important; }
     #sidebar.collapsed .ci-title { display:none; }
@@ -99,7 +80,6 @@
     #sidebar.collapsed .urow { justify-content:center; padding:10px 0; }
     #sidebar.collapsed #sb-sub-btn span { display:none; }
     #sidebar.collapsed #sb-sub-btn { justify-content:center; padding:10px 0; width:100%; }
-
     #search-wrap{padding:0 2px 8px;display:none}
     #search-wrap.open{display:block}
     #search-inp {
@@ -110,10 +90,8 @@
     }
     #search-inp:focus{border-color:var(--acc)}
     #search-inp::placeholder{color:var(--muted)}
-
     #conv-list{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:1px;padding-bottom:8px}
     .cgl{padding:10px 10px 4px;font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.05em}
-
     .ci {
       padding:10px; border-radius:8px; cursor:pointer;
       color:var(--sub); font-size:14px;
@@ -132,7 +110,6 @@
     .ci-del svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
     .ci:hover .ci-del{opacity:1}
     .ci-del:hover,.ci-del:active{color:var(--red)}
-
     #sb-bot {
       border-top:1px solid var(--bdr);
       padding-top:6px;
@@ -140,8 +117,6 @@
       margin-top:auto;
       display:flex; flex-direction:column; gap:2px;
     }
-
-    /* Bouton Abonnement dans la sidebar */
     #sb-sub-btn {
       display:flex; align-items:center; gap:10px; padding:10px;
       border-radius:8px; cursor:pointer; border:none;
@@ -151,9 +126,8 @@
       min-height:44px; -webkit-tap-highlight-color:transparent;
       overflow:hidden;
     }
-    #sb-sub-btn:hover,.#sb-sub-btn:active{background:rgba(var(--acc-rgb),.18)}
+    #sb-sub-btn:hover{background:rgba(var(--acc-rgb),.18)}
     #sb-sub-btn .sub-icon{font-size:18px;flex-shrink:0}
-
     .urow {
       display:flex; align-items:center; gap:10px; padding:10px;
       border-radius:8px; cursor:pointer; border:none; background:transparent;
@@ -169,11 +143,8 @@
     }
     .uname{font-size:14px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
-    /* ══════════════════════════════════════════
-       MAIN
-    ══════════════════════════════════════════ */
+    /* ══ MAIN ══ */
     #main{flex:1;display:flex;flex-direction:column;background:var(--bg);min-width:0;height:100%;overflow:hidden}
-
     #topbar {
       flex-shrink:0;
       display:flex; align-items:center; justify-content:space-between;
@@ -201,16 +172,12 @@
     .tb:hover,.tb:active{background:var(--hov);color:var(--txt)}
     .tb svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 
-    /* ══════════════════════════════════════════
-       CHAT CONTAINER
-    ══════════════════════════════════════════ */
+    /* ══ CHAT ══ */
     #chat-cont {
       flex:1; overflow-y:auto; overflow-x:hidden;
       display:flex; flex-direction:column;
       -webkit-overflow-scrolling:touch; overscroll-behavior:contain;
     }
-
-    /* Welcome */
     #welcome {
       display:flex;flex-direction:column;align-items:center;justify-content:center;
       flex:1;padding:32px 16px;text-align:center;gap:0;
@@ -243,7 +210,6 @@
     #chat{display:flex;flex-direction:column;width:100%;max-width:760px;margin:0 auto;padding:16px 16px 32px}
     .mg{display:flex;flex-direction:column;padding:10px 0;animation:fi .2s ease}
     @keyframes fi{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
-
     .mg.user{align-items:flex-end}
     .mg.user .bub {
       background:var(--ubub-color);
@@ -252,7 +218,6 @@
       word-break:break-word; overflow-wrap:break-word;
       position:relative;
     }
-    /* bouton edit sur les messages user */
     .user-edit-btn {
       position:absolute; bottom:-8px; right:6px;
       background:var(--inp); border:1px solid var(--bdr);
@@ -264,8 +229,6 @@
     .mg.user:hover .user-edit-btn{opacity:1}
     @media(hover:none){.user-edit-btn{opacity:1}}
     .user-edit-btn:hover{color:var(--txt);background:var(--hov)}
-
-    /* zone d'édition inline */
     .edit-area {
       background:var(--inp); border:1px solid var(--acc);
       border-radius:12px; padding:10px 12px;
@@ -281,12 +244,10 @@
     }
     .edit-ok{background:var(--acc);color:#fff}
     .edit-cancel{background:var(--inp);color:var(--muted);border:1px solid var(--bdr)}
-
     .mg.bot{align-items:flex-start}
     .bh{display:flex;align-items:center;gap:9px;margin-bottom:6px}
     .bico{width:26px;height:26px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0}
     .bico svg{width:15px;height:15px}
-    .bico img{width:22px;height:22px;border-radius:50%;object-fit:cover}
     .blbl{font-size:14px;font-weight:600}
     .tool-badge {
       display:inline-flex;align-items:center;gap:4px;
@@ -296,7 +257,15 @@
       color:var(--acc);font-size:11px;font-weight:600;
       margin-left:8px;vertical-align:middle;
     }
-    
+    .mode-badge {
+      display:inline-flex;align-items:center;gap:4px;
+      padding:2px 8px;border-radius:10px;
+      background:rgba(255,255,255,.1);
+      border:1px solid rgba(255,255,255,.15);
+      color:var(--sub);font-size:11px;font-weight:600;
+      margin-left:8px;vertical-align:middle;
+    }
+    body.light .mode-badge {background:rgba(0,0,0,.06);border-color:rgba(0,0,0,.1);}
     .mg.bot .bub{font-size:15px;line-height:1.7;width:100%;word-break:break-word;overflow-wrap:break-word}
     .mg.bot .bub p{margin:0 0 10px}
     .mg.bot .bub p:last-child{margin:0}
@@ -307,18 +276,6 @@
     .mg.bot .bub a{color:var(--acc);text-decoration:none}
     .mg.bot .bub a:hover{text-decoration:underline}
     .mg.bot .bub pre{background:var(--codebg);border-radius:10px;overflow:hidden;margin:10px 0;max-width:100%}
-    .mode-badge {
-      display:inline-flex;align-items:center;gap:4px;
-      padding:2px 8px;border-radius:10px;
-      background:rgba(255,255,255,.1);
-      border:1px solid rgba(255,255,255,.15);
-      color:var(--sub);font-size:11px;font-weight:600;
-      margin-left:8px;vertical-align:middle;
-    }
-    body.light .mode-badge {
-      background:rgba(0,0,0,.06);
-      border-color:rgba(0,0,0,.1);
-    }
     .chdr {
       display:flex;align-items:center;justify-content:space-between;
       padding:7px 12px;background:rgba(255,255,255,.05);
@@ -345,10 +302,9 @@
     .interactive-actions{display:flex;gap:4px}
     .int-btn{background:none;border:1px solid rgba(var(--acc-rgb),.25);color:var(--acc);border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;font-family:inherit;transition:background .15s}
     .int-btn:hover{background:rgba(var(--acc-rgb),.15)}
-    /* ⚡ CLEF : pas de max-height, pas d'overflow caché = l'iframe grandit autant que nécessaire */
     .interactive-iframe{width:100%;border:none;display:block;overflow:hidden;transition:height .2s ease}
 
-    /* Message actions */
+    /* ── Message actions ── */
     .ma{display:flex;gap:3px;margin-top:6px;opacity:0;transition:opacity .15s}
     .mg:hover .ma{opacity:1}
     @media(hover:none){.ma{opacity:1}}
@@ -356,19 +312,86 @@
     .mab:hover,.mab:active{background:var(--hov);color:var(--txt)}
     .mab svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 
-    /* Thinking */
+    /* ── Thinking ── */
     .tdots{display:flex;gap:5px;padding:6px 0}
     .tdots span{width:7px;height:7px;background:var(--muted);border-radius:50%;animation:bd 1.2s infinite}
     .tdots span:nth-child(2){animation-delay:.2s}
     .tdots span:nth-child(3){animation-delay:.4s}
     @keyframes bd{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-7px)}}
-
-    /* retry indicator */
     .retry-lbl{font-size:12px;color:var(--muted);padding:2px 0;font-style:italic}
 
-    /* ══════════════════════════════════════════
-       INPUT AREA
-    ══════════════════════════════════════════ */
+    /* ── Status animated text ── */
+    .think-status {
+      font-size:12px;
+      font-weight:500;
+      padding:3px 0 2px;
+      background: linear-gradient(90deg,
+        var(--muted) 0%,
+        var(--txt) 30%,
+        var(--acc) 50%,
+        var(--txt) 70%,
+        var(--muted) 100%);
+      background-size: 200% auto;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: shimmer 2.2s linear infinite;
+    }
+    @keyframes shimmer {
+      0%{background-position:200% center}
+      100%{background-position:-200% center}
+    }
+
+    /* ══ MODE SELECTOR — nouveau bouton pill ══ */
+    #mode-selector { position:relative; }
+    #mode-pill-btn {
+      display:flex; align-items:center; gap:6px;
+      padding:0 12px; height:36px;
+      border-radius:8px; border:1px solid var(--bdr);
+      background:var(--inp); color:var(--txt);
+      font-size:13px; font-weight:500; cursor:pointer;
+      font-family:inherit; transition:border-color .15s, background .15s;
+      -webkit-tap-highlight-color:transparent;
+      white-space:nowrap;
+    }
+    #mode-pill-btn:hover{border-color:var(--acc);background:var(--hov)}
+    #mode-pill-btn .mode-arrow {
+      width:12px;height:12px;fill:none;stroke:var(--muted);
+      stroke-width:2;stroke-linecap:round;stroke-linejoin:round;
+      transition:transform .2s;
+    }
+    #mode-pill-btn.open .mode-arrow{transform:rotate(180deg)}
+
+    #mode-dropdown {
+      position:absolute; bottom:calc(100% + 8px); left:0;
+      background:var(--modbg); border:1px solid var(--bdr);
+      border-radius:12px; padding:6px; min-width:200px;
+      box-shadow:0 8px 32px rgba(0,0,0,.45);
+      display:none; flex-direction:column; gap:2px;
+      z-index:200;
+      animation:dropUp .18s ease;
+    }
+    @keyframes dropUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+    #mode-dropdown.open{display:flex}
+
+    .mode-opt {
+      display:flex; align-items:center; gap:10px;
+      padding:10px 12px; border-radius:8px; cursor:pointer;
+      border:none; background:transparent; color:var(--txt);
+      font-family:inherit; font-size:14px; text-align:left;
+      transition:background .12s; -webkit-tap-highlight-color:transparent;
+    }
+    .mode-opt:hover,.mode-opt:active{background:var(--hov)}
+    .mode-opt.active{background:rgba(var(--acc-rgb),.12);color:var(--acc)}
+    .mode-opt .mo-icon{font-size:17px;flex-shrink:0;width:24px;text-align:center}
+    .mode-opt .mo-info{display:flex;flex-direction:column;gap:1px}
+    .mode-opt .mo-name{font-weight:600;font-size:13px}
+    .mode-opt .mo-desc{font-size:11px;color:var(--muted);line-height:1.3}
+    .mode-opt.active .mo-desc{color:rgba(var(--acc-rgb),.7)}
+    .mode-opt .mo-check{margin-left:auto;color:var(--acc);opacity:0;font-size:14px}
+    .mode-opt.active .mo-check{opacity:1}
+
+    /* ══ INPUT AREA ══ */
     #input-area{flex-shrink:0;padding:8px 12px;padding-bottom:calc(10px + var(--safe-bot));background:var(--bg);border-top:1px solid var(--bdr)}
     #input-outer{max-width:760px;margin:0 auto}
     #input-box{background:var(--inp);border-radius:16px;display:flex;flex-direction:column;overflow:hidden;border:1px solid transparent;transition:border-color .15s}
@@ -389,9 +412,7 @@
     #send-btn svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
     #disclaimer{text-align:center;font-size:11px;color:var(--muted);margin-top:7px}
 
-    /* ══════════════════════════════════════════
-       MODALS
-    ══════════════════════════════════════════ */
+    /* ══ MODALS ══ */
     .ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:1000;align-items:flex-end;justify-content:center;backdrop-filter:blur(6px);padding:0}
     .ov.open{display:flex}
     .mod{background:var(--modbg);border-radius:20px 20px 0 0;padding:24px 20px;padding-bottom:calc(24px + var(--safe-bot));width:100%;max-width:500px;border:1px solid var(--bdr);border-bottom:none;animation:slideUp .25s ease;max-height:92vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
@@ -399,17 +420,12 @@
     .mod::before{content:'';display:block;width:36px;height:4px;background:var(--bdr);border-radius:2px;margin:0 auto 20px}
     .mod h2{font-size:20px;font-weight:700;margin-bottom:6px}
     .msub{font-size:14px;color:var(--muted);margin-bottom:20px}
-
-    /* Onglets paramètres */
     .ptabs{display:flex;gap:4px;margin-bottom:20px;background:var(--hov);border-radius:10px;padding:4px;overflow-x:auto}
     .ptab{flex:1;min-width:90px;padding:9px 8px;border-radius:7px;border:none;background:transparent;color:var(--muted);font-size:13px;font-weight:500;cursor:pointer;transition:background .15s,color .15s;font-family:inherit;white-space:nowrap;-webkit-tap-highlight-color:transparent}
     .ptab.on{background:var(--bg);color:var(--txt);box-shadow:0 1px 4px rgba(0,0,0,.25)}
-
-    /* tabs auth */
     .tabs{display:flex;gap:4px;margin-bottom:20px;background:var(--hov);border-radius:10px;padding:4px}
     .tab{flex:1;padding:10px;border-radius:7px;border:none;background:transparent;color:var(--muted);font-size:14px;font-weight:500;cursor:pointer;transition:background .15s,color .15s;font-family:inherit;min-height:44px;-webkit-tap-highlight-color:transparent}
     .tab.on{background:var(--bg);color:var(--txt);box-shadow:0 1px 4px rgba(0,0,0,.25)}
-
     .mi{width:100%;padding:13px 14px;background:var(--inp);border:1px solid var(--bdr);border-radius:10px;color:var(--txt);font-size:16px;font-family:inherit;outline:none;transition:border-color .15s;margin-bottom:10px;-webkit-appearance:none}
     .mi:focus{border-color:var(--acc)}
     .mb{width:100%;padding:14px;border-radius:12px;border:none;font-size:15px;font-weight:500;cursor:pointer;font-family:inherit;transition:opacity .15s;margin-top:8px;min-height:48px;-webkit-tap-highlight-color:transparent}
@@ -438,23 +454,88 @@
     .tcard .tname{font-weight:600;color:var(--acc);margin-bottom:3px}
     .tcard .tdesc{color:var(--sub);font-size:12px}
 
-    /* ── PLANS ── */
-    .plans-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:16px 0}
-    .plan-card{border:1px solid var(--bdr);border-radius:14px;padding:16px 12px;text-align:center;cursor:pointer;transition:all .15s;position:relative;-webkit-tap-highlight-color:transparent}
-    .plan-card:hover{border-color:var(--acc);background:rgba(var(--acc-rgb),.05)}
-    .plan-card.popular{border-color:var(--acc);background:rgba(var(--acc-rgb),.08)}
-    .plan-badge{position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--acc);color:#fff;font-size:10px;font-weight:700;padding:2px 10px;border-radius:20px;white-space:nowrap}
-    .plan-name{font-size:13px;font-weight:600;color:var(--txt);margin-bottom:4px}
-    .plan-price{font-size:24px;font-weight:800;color:var(--acc);line-height:1}
-    .plan-period{font-size:11px;color:var(--muted);margin-bottom:10px}
-    .plan-features{list-style:none;text-align:left;font-size:12px;color:var(--sub);line-height:2}
-    .plan-features li::before{content:'✓ ';color:var(--acc);font-weight:700}
-    .plan-btn{display:block;width:100%;margin-top:12px;padding:8px;border-radius:8px;border:none;background:var(--acc);color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:opacity .15s}
-    .plan-btn:hover{opacity:.85}
-    .plan-card.popular .plan-btn{background:var(--acc)}
-    .plan-card:not(.popular) .plan-btn{background:transparent;border:1px solid var(--bdr);color:var(--txt)}
+    /* ══ PLANS — page abonnements améliorée ══ */
+    .plans-mod { max-width:640px !important; }
+    .plans-hero {
+      text-align:center;
+      padding:8px 0 24px;
+    }
+    .plans-hero h2 { font-size:26px; font-weight:800; margin-bottom:6px; }
+    .plans-hero p { font-size:14px; color:var(--muted); }
+    .plans-toggle {
+      display:flex; align-items:center; justify-content:center;
+      gap:10px; margin-bottom:24px;
+    }
+    .plans-toggle span { font-size:13px; color:var(--muted); }
+    .plans-toggle span.active { color:var(--txt); font-weight:600; }
+    .billing-tog {
+      width:40px; height:22px; background:var(--bdr); border-radius:11px;
+      position:relative; cursor:pointer; transition:background .2s; border:none; flex-shrink:0;
+    }
+    .billing-tog.on { background:var(--acc); }
+    .billing-tog::after { content:''; width:16px; height:16px; background:#fff; border-radius:50%; position:absolute; top:3px; left:3px; transition:transform .2s; }
+    .billing-tog.on::after { transform:translateX(18px); }
+    .save-badge {
+      background:rgba(var(--acc-rgb),.15); color:var(--acc);
+      font-size:10px; font-weight:700; padding:2px 6px; border-radius:6px;
+    }
+    .plans-grid {
+      display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:20px;
+    }
+    .plan-card {
+      border:1px solid var(--bdr); border-radius:16px; padding:20px 16px;
+      text-align:center; cursor:pointer; transition:all .2s; position:relative;
+      -webkit-tap-highlight-color:transparent; display:flex; flex-direction:column;
+    }
+    .plan-card:hover { border-color:var(--acc); transform:translateY(-2px); box-shadow:0 8px 24px rgba(0,0,0,.25); }
+    .plan-card.popular {
+      border-color:var(--acc); background:rgba(var(--acc-rgb),.07);
+      transform:translateY(-4px); box-shadow:0 8px 32px rgba(var(--acc-rgb),.2);
+    }
+    .plan-badge {
+      position:absolute; top:-12px; left:50%; transform:translateX(-50%);
+      background:linear-gradient(135deg,var(--acc),rgba(var(--acc-rgb),.6));
+      color:#fff; font-size:11px; font-weight:700; padding:3px 12px;
+      border-radius:20px; white-space:nowrap; box-shadow:0 2px 8px rgba(var(--acc-rgb),.4);
+    }
+    .plan-icon { font-size:28px; margin-bottom:8px; display:block; }
+    .plan-name { font-size:15px; font-weight:700; color:var(--txt); margin-bottom:4px; }
+    .plan-desc { font-size:12px; color:var(--muted); margin-bottom:14px; line-height:1.4; min-height:32px; }
+    .plan-price-wrap { margin-bottom:16px; }
+    .plan-price { font-size:36px; font-weight:800; color:var(--acc); line-height:1; }
+    .plan-price-annual { font-size:28px; }
+    .plan-period { font-size:12px; color:var(--muted); margin-top:2px; }
+    .plan-annual-note { font-size:11px; color:var(--acc); margin-top:3px; font-weight:500; }
+    .plan-features {
+      list-style:none; text-align:left; font-size:13px; color:var(--sub);
+      flex:1; margin-bottom:16px;
+    }
+    .plan-features li {
+      display:flex; align-items:flex-start; gap:6px;
+      padding:5px 0; border-bottom:1px solid rgba(255,255,255,.04);
+    }
+    .plan-features li:last-child { border-bottom:none; }
+    .plan-features .fi { color:var(--acc); flex-shrink:0; font-size:13px; margin-top:1px; }
+    .plan-btn {
+      display:block; width:100%; padding:11px;
+      border-radius:10px; border:none;
+      background:var(--acc); color:#fff;
+      font-size:14px; font-weight:600; cursor:pointer;
+      font-family:inherit; transition:all .15s; margin-top:auto;
+    }
+    .plan-btn:hover { opacity:.88; transform:scale(1.02); }
+    .plan-card:not(.popular) .plan-btn {
+      background:transparent; border:1px solid var(--bdr); color:var(--txt);
+    }
+    .plan-card:not(.popular) .plan-btn:hover {
+      border-color:var(--acc); color:var(--acc); background:rgba(var(--acc-rgb),.07);
+    }
+    .plans-footer {
+      text-align:center; font-size:12px; color:var(--muted); margin-bottom:8px;
+    }
+    .plans-footer a { color:var(--acc); text-decoration:none; }
 
-    /* ── Couleur d'accentuation picker ── */
+    /* ── Couleur accent ── */
     .acc-swatches{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
     .swatch{width:30px;height:30px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:border-color .15s;flex-shrink:0}
     .swatch.active{border-color:var(--txt);box-shadow:0 0 0 2px var(--bg),0 0 0 4px currentColor}
@@ -477,18 +558,14 @@
     /* Toast */
     #toast{position:fixed;bottom:calc(80px + var(--safe-bot));left:50%;transform:translateX(-50%) translateY(8px);background:#323232;color:#fff;padding:10px 18px;border-radius:8px;font-size:14px;z-index:9999;opacity:0;transition:opacity .25s,transform .25s;pointer-events:none;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,.4);max-width:90vw;text-align:center}
     #toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
-
-    /* Sidebar overlay mobile */
     #sb-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:199}
     #sb-ov.on{display:block}
 
-    /* ══════════════════════════════════════════
-       RESPONSIVE
-    ══════════════════════════════════════════ */
+    /* ══ RESPONSIVE ══ */
     @media(max-width:768px){
       #sidebar{position:fixed;top:0;left:0;bottom:0;width:80vw;max-width:300px;height:100%;transform:translateX(-100%);transition:transform .25s ease;z-index:300}
       #sidebar.open{transform:translateX(0);box-shadow:4px 0 32px rgba(0,0,0,.5)}
-      #sidebar.collapsed{width:80vw} /* sur mobile collapsed = pas d'effet, on garde le tiroir normal */
+      #sidebar.collapsed{width:80vw}
       #chat{padding:12px 12px 24px}
       .mg.user .bub{max-width:92%}
       #welcome{padding:24px 14px}
@@ -499,7 +576,10 @@
       .mod{border-radius:20px 20px 0 0;max-height:88vh}
       .tools-grid{grid-template-columns:1fr}
       .plans-grid{grid-template-columns:1fr}
+      .plan-card.popular{transform:none}
+      .plan-card:hover{transform:none}
       .interactive-iframe{max-height:none}
+      #mode-dropdown{left:auto;right:0}
     }
     @media(max-width:380px){.sugs{grid-template-columns:1fr}#tinput{font-size:16px}}
     @media(max-height:500px) and (orientation:landscape){
@@ -515,12 +595,9 @@
 
 <div id="sb-ov" onclick="closeSB()"></div>
 
-<!-- ═══════════════════════════════════
-     SIDEBAR
-═══════════════════════════════════ -->
+<!-- SIDEBAR -->
 <aside id="sidebar">
   <div id="sb-top">
-    <!-- Bouton toggle collapse (remplace le X inutile) -->
     <button class="ib" id="sb-toggle-btn" onclick="toggleSidebar()" title="Réduire/Agrandir">
       <svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
     </button>
@@ -536,12 +613,10 @@
   </div>
   <div id="conv-list"></div>
   <div id="sb-bot">
-    <!-- Bouton abonnement -->
     <button id="sb-sub-btn" onclick="openSub()" title="Abonnements">
       <span class="sub-icon">⚡</span>
       <span class="sb-hide">Premium & Abonnements</span>
     </button>
-    <!-- Profil -->
     <button class="urow" onclick="openSettings()" title="Paramètres">
       <div class="uav" id="sb-av">?</div>
       <span class="uname sb-hide" id="sb-un">Utilisateur</span>
@@ -549,17 +624,13 @@
   </div>
 </aside>
 
-<!-- ═══════════════════════════════════
-     MAIN
-═══════════════════════════════════ -->
+<!-- MAIN -->
 <main id="main">
   <div id="topbar">
     <div id="topbar-l">
-      <!-- Sur mobile : bouton hamburger pour ouvrir le tiroir -->
       <button class="tb" id="mob-menu-btn" onclick="openSB()" style="display:none">
         <svg viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
       </button>
-      <!-- Nom de l'app — CHANGER APP_NAME dans le JS ci-dessous -->
       <button id="model-pill">
         <span id="app-name-pill">RokyGPT</span>
         <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
@@ -603,24 +674,52 @@
             <svg viewBox="0 0 24 24"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
             Joindre
           </label>
+
+          <!-- Nouveau sélecteur de mode -->
           <div id="mode-selector">
-            <button class="mode-btn active" data-mode="fast"      onclick="setMode('fast')">     <span class="mode-dot"></span>⚡ Fast</button>
-            <button class="mode-btn"        data-mode="balanced"  onclick="setMode('balanced')"> <span class="mode-dot"></span>⚖️ Balanced</button>
-            <button class="mode-btn"        data-mode="thinking"  onclick="setMode('thinking')"> <span class="mode-dot"></span>🧠 Thinking</button>
+            <button id="mode-pill-btn" onclick="toggleModeDropdown(event)">
+              <span id="mode-pill-label">⚡ Fast</span>
+              <svg class="mode-arrow" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            <div id="mode-dropdown">
+              <button class="mode-opt active" data-mode="fast" onclick="setMode('fast')">
+                <span class="mo-icon">⚡</span>
+                <span class="mo-info">
+                  <span class="mo-name">Fast</span>
+                  <span class="mo-desc">Réponse immédiate</span>
+                </span>
+                <span class="mo-check">✓</span>
+              </button>
+              <button class="mode-opt" data-mode="balanced" onclick="setMode('balanced')">
+                <span class="mo-icon">⚖️</span>
+                <span class="mo-info">
+                  <span class="mo-name">Balanced</span>
+                  <span class="mo-desc">Vitesse & précision</span>
+                </span>
+                <span class="mo-check">✓</span>
+              </button>
+              <button class="mode-opt" data-mode="thinking" onclick="setMode('thinking')">
+                <span class="mo-icon">🧠</span>
+                <span class="mo-info">
+                  <span class="mo-name">Thinking</span>
+                  <span class="mo-desc">Analyse complète, peut prendre quelques secondes</span>
+                </span>
+                <span class="mo-check">✓</span>
+              </button>
+            </div>
           </div>
+
           <button id="send-btn" disabled>
             <svg viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
           </button>
         </div>
       </div>
-      <div id="disclaimer" id="disclaimer-txt">RokyGPT peut faire des erreurs.</div>
+      <div id="disclaimer">RokyGPT peut faire des erreurs.</div>
     </div>
   </div>
 </main>
 
-<!-- ═══════════════════════════════════
-     MODAL AUTH
-═══════════════════════════════════ -->
+<!-- MODAL AUTH -->
 <div id="mod-auth" class="ov open">
   <div class="mod" style="max-width:500px">
     <h2>Bienvenue sur <span id="auth-app-name">RokyGPT</span></h2>
@@ -648,9 +747,7 @@
   </div>
 </div>
 
-<!-- ═══════════════════════════════════
-     MODAL SETTINGS — multi-onglets
-═══════════════════════════════════ -->
+<!-- MODAL SETTINGS -->
 <div id="mod-set" class="ov">
   <div class="mod">
     <h2>Paramètres</h2>
@@ -660,8 +757,6 @@
       <button class="ptab" onclick="showPTab('memoire')">🧠 Mémoire</button>
       <button class="ptab" onclick="showPTab('outils')">⚡ Outils</button>
     </div>
-
-    <!-- Onglet Personnalisation -->
     <div id="ptab-perso">
       <div class="srow">
         <div><div class="slbl">Thème sombre</div><div class="sdsc">Basculer l'apparence</div></div>
@@ -670,14 +765,14 @@
       <div class="srow" style="flex-direction:column;align-items:flex-start;gap:10px">
         <div><div class="slbl">Couleur d'accentuation</div><div class="sdsc">Appliquée aux boutons, bulles et accents</div></div>
         <div class="acc-swatches" id="acc-swatches">
-          <div class="swatch" data-color="#10a37f" style="background:#10a37f" title="Vert (défaut)" onclick="setAccent('#10a37f','10,163,127')"></div>
-          <div class="swatch" data-color="#6366f1" style="background:#6366f1" title="Indigo" onclick="setAccent('#6366f1','99,102,241')"></div>
-          <div class="swatch" data-color="#f59e0b" style="background:#f59e0b" title="Ambre" onclick="setAccent('#f59e0b','245,158,11')"></div>
-          <div class="swatch" data-color="#ef4444" style="background:#ef4444" title="Rouge" onclick="setAccent('#ef4444','239,68,68')"></div>
-          <div class="swatch" data-color="#ec4899" style="background:#ec4899" title="Rose" onclick="setAccent('#ec4899','236,72,153')"></div>
-          <div class="swatch" data-color="#3b82f6" style="background:#3b82f6" title="Bleu" onclick="setAccent('#3b82f6','59,130,246')"></div>
-          <div class="swatch" data-color="#8b5cf6" style="background:#8b5cf6" title="Violet" onclick="setAccent('#8b5cf6','139,92,246')"></div>
-          <div class="swatch" data-color="#f97316" style="background:#f97316" title="Orange" onclick="setAccent('#f97316','249,115,22')"></div>
+          <div class="swatch" data-color="#10a37f" style="background:#10a37f" onclick="setAccent('#10a37f','10,163,127')"></div>
+          <div class="swatch" data-color="#6366f1" style="background:#6366f1" onclick="setAccent('#6366f1','99,102,241')"></div>
+          <div class="swatch" data-color="#f59e0b" style="background:#f59e0b" onclick="setAccent('#f59e0b','245,158,11')"></div>
+          <div class="swatch" data-color="#ef4444" style="background:#ef4444" onclick="setAccent('#ef4444','239,68,68')"></div>
+          <div class="swatch" data-color="#ec4899" style="background:#ec4899" onclick="setAccent('#ec4899','236,72,153')"></div>
+          <div class="swatch" data-color="#3b82f6" style="background:#3b82f6" onclick="setAccent('#3b82f6','59,130,246')"></div>
+          <div class="swatch" data-color="#8b5cf6" style="background:#8b5cf6" onclick="setAccent('#8b5cf6','139,92,246')"></div>
+          <div class="swatch" data-color="#f97316" style="background:#f97316" onclick="setAccent('#f97316','249,115,22')"></div>
         </div>
         <div class="acc-custom">
           <input type="color" id="acc-custom-pick" value="#10a37f" oninput="onCustomAccent(this.value)">
@@ -687,16 +782,14 @@
       <div class="srow" style="flex-direction:column;align-items:flex-start;gap:8px">
         <div><div class="slbl">Couleur de ma bulle</div><div class="sdsc">La couleur de fond de tes messages</div></div>
         <div class="acc-swatches" id="ubub-swatches">
-          <div class="swatch" data-ubub="#2f2f2f" style="background:#2f2f2f;border:1px solid #555" title="Gris (défaut)" onclick="setUbub('#2f2f2f')"></div>
-          <div class="swatch" data-ubub="#1d3a2f" style="background:#1d3a2f" title="Vert sombre" onclick="setUbub('#1d3a2f')"></div>
-          <div class="swatch" data-ubub="#1e2a4a" style="background:#1e2a4a" title="Bleu sombre" onclick="setUbub('#1e2a4a')"></div>
-          <div class="swatch" data-ubub="#2d1b3d" style="background:#2d1b3d" title="Violet sombre" onclick="setUbub('#2d1b3d')"></div>
-          <div class="swatch" data-ubub="#3d2020" style="background:#3d2020" title="Rouge sombre" onclick="setUbub('#3d2020')"></div>
+          <div class="swatch" data-ubub="#2f2f2f" style="background:#2f2f2f;border:1px solid #555" onclick="setUbub('#2f2f2f')"></div>
+          <div class="swatch" data-ubub="#1d3a2f" style="background:#1d3a2f" onclick="setUbub('#1d3a2f')"></div>
+          <div class="swatch" data-ubub="#1e2a4a" style="background:#1e2a4a" onclick="setUbub('#1e2a4a')"></div>
+          <div class="swatch" data-ubub="#2d1b3d" style="background:#2d1b3d" onclick="setUbub('#2d1b3d')"></div>
+          <div class="swatch" data-ubub="#3d2020" style="background:#3d2020" onclick="setUbub('#3d2020')"></div>
         </div>
       </div>
     </div>
-
-    <!-- Onglet Compte -->
     <div id="ptab-compte" style="display:none">
       <div class="srow">
         <div><div class="slbl">Connecté en tant que</div><div class="sdsc" id="set-user">Non connecté</div></div>
@@ -712,18 +805,14 @@
       <hr class="mdiv">
       <button class="mb d" onclick="confirmClear()">🗑️ Effacer toutes les conversations</button>
     </div>
-
-    <!-- Onglet Mémoire -->
     <div id="ptab-memoire" style="display:none">
-      <p style="font-size:13px;color:var(--muted);margin-bottom:12px">Les instructions de mémoire sont injectées dans chaque conversation. Utile pour forcer un style, une langue, etc.</p>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:12px">Les instructions de mémoire sont injectées dans chaque conversation.</p>
       <div class="mem-list" id="mem-list"></div>
       <div class="mem-add-row">
         <input id="mem-inp" placeholder="Ex: Parle toujours en québécois..." maxlength="200">
         <button class="mem-add-btn" onclick="addMemory()">+ Ajouter</button>
       </div>
     </div>
-
-    <!-- Onglet Outils -->
     <div id="ptab-outils" style="display:none">
       <div style="font-size:13px;font-weight:600;color:var(--acc);margin-bottom:8px">⚡ Tools actifs</div>
       <div class="tools-grid">
@@ -735,67 +824,97 @@
         <div class="tcard"><div class="tname">✨ Interactif</div><div class="tdesc">Checklists, graphiques, drag&drop</div></div>
       </div>
     </div>
-
     <hr class="mdiv">
     <button class="mb g" onclick="closeSettings()">Fermer</button>
   </div>
 </div>
 
-<!-- ═══════════════════════════════════
-     MODAL ABONNEMENTS (3 plans)
-═══════════════════════════════════ -->
+<!-- MODAL ABONNEMENTS — améliorée -->
 <div id="mod-sub" class="ov">
-  <div class="mod" style="max-width:600px">
-    <h2>⚡ Abonnements</h2>
-    <p class="msub">Choisissez le plan qui vous convient</p>
+  <div class="mod plans-mod">
+    <div class="plans-hero">
+      <h2>⚡ Passez à la vitesse supérieure</h2>
+      <p>Choisissez le plan qui correspond à vos besoins</p>
+    </div>
+
+    <div class="plans-toggle">
+      <span class="active" id="billing-monthly-lbl">Mensuel</span>
+      <button class="billing-tog" id="billing-tog" onclick="toggleBilling()"></button>
+      <span id="billing-annual-lbl">Annuel</span>
+      <span class="save-badge" id="save-badge">−20%</span>
+    </div>
+
     <div class="plans-grid">
-      <!-- Plan Starter -->
+      <!-- Starter -->
       <div class="plan-card">
+        <span class="plan-icon">🌱</span>
         <div class="plan-name">Starter</div>
-        <div class="plan-price">2€</div>
-        <div class="plan-period">/mois</div>
+        <div class="plan-desc">Pour découvrir et utiliser l'IA au quotidien</div>
+        <div class="plan-price-wrap">
+          <div class="plan-price" id="price-starter">2€</div>
+          <div class="plan-period">/mois</div>
+          <div class="plan-annual-note" id="note-starter" style="visibility:hidden">soit 19,20€/an</div>
+        </div>
         <ul class="plan-features">
-          <li>100 messages/jour</li>
-          <li>Tous les tools</li>
-          <li>Historique 30 jours</li>
+          <li><span class="fi">✓</span>100 messages / jour</li>
+          <li><span class="fi">✓</span>Tous les outils</li>
+          <li><span class="fi">✓</span>Historique 30 jours</li>
+          <li><span class="fi">✓</span>Support standard</li>
         </ul>
-        <button class="plan-btn" onclick="goStripe('starter')">Choisir</button>
+        <button class="plan-btn" onclick="goStripe('starter')">Commencer</button>
       </div>
-      <!-- Plan Pro (populaire) -->
+
+      <!-- Pro (populaire) -->
       <div class="plan-card popular">
-        <div class="plan-badge">⭐ Populaire</div>
+        <div class="plan-badge">⭐ Le plus populaire</div>
+        <span class="plan-icon">🚀</span>
         <div class="plan-name">Pro</div>
-        <div class="plan-price">5€</div>
-        <div class="plan-period">/mois</div>
+        <div class="plan-desc">Pour les utilisateurs intensifs qui veulent le meilleur</div>
+        <div class="plan-price-wrap">
+          <div class="plan-price plan-price-annual" id="price-pro">5€</div>
+          <div class="plan-period">/mois</div>
+          <div class="plan-annual-note" id="note-pro" style="visibility:hidden">soit 48€/an</div>
+        </div>
         <ul class="plan-features">
-          <li>Illimité</li>
-          <li>Accès prioritaire</li>
-          <li>Historique illimité</li>
-          <li>Support prioritaire</li>
+          <li><span class="fi">✓</span>Messages illimités</li>
+          <li><span class="fi">✓</span>Accès prioritaire</li>
+          <li><span class="fi">✓</span>Historique illimité</li>
+          <li><span class="fi">✓</span>Support prioritaire</li>
+          <li><span class="fi">✓</span>Mode Thinking avancé</li>
         </ul>
-        <button class="plan-btn" onclick="goStripe('pro')">Choisir</button>
+        <button class="plan-btn" onclick="goStripe('pro')">Choisir Pro</button>
       </div>
-      <!-- Plan Ultra -->
+
+      <!-- Ultra -->
       <div class="plan-card">
+        <span class="plan-icon">💎</span>
         <div class="plan-name">Ultra</div>
-        <div class="plan-price">15€</div>
-        <div class="plan-period">/mois</div>
+        <div class="plan-desc">Pour les équipes et les power users exigeants</div>
+        <div class="plan-price-wrap">
+          <div class="plan-price" id="price-ultra">15€</div>
+          <div class="plan-period">/mois</div>
+          <div class="plan-annual-note" id="note-ultra" style="visibility:hidden">soit 144€/an</div>
+        </div>
         <ul class="plan-features">
-          <li>Tout du Pro</li>
-          <li>Mode voix (bientôt)</li>
-          <li>API personnelle</li>
-          <li>Accès bêta</li>
+          <li><span class="fi">✓</span>Tout du Pro</li>
+          <li><span class="fi">✓</span>API personnelle</li>
+          <li><span class="fi">✓</span>Mode voix (bientôt)</li>
+          <li><span class="fi">✓</span>Accès bêta exclusif</li>
+          <li><span class="fi">✓</span>SLA garanti</li>
         </ul>
-        <button class="plan-btn" onclick="goStripe('ultra')">Choisir</button>
+        <button class="plan-btn" onclick="goStripe('ultra')">Choisir Ultra</button>
       </div>
     </div>
+
+    <div class="plans-footer">
+      🔒 Paiement sécurisé via Stripe &nbsp;·&nbsp; Annulation à tout moment &nbsp;·&nbsp; <a href="#">CGU</a>
+    </div>
+
     <button class="mb g" onclick="closeSub()">Peut-être plus tard</button>
   </div>
 </div>
 
-<!-- ═══════════════════════════════════
-     MODAL CHANGEMENT MDP
-═══════════════════════════════════ -->
+<!-- MODAL CHANGEMENT MDP -->
 <div id="mod-chpw" class="ov">
   <div class="mod" style="max-width:400px">
     <h2>Changer le mot de passe</h2>
@@ -809,9 +928,7 @@
   </div>
 </div>
 
-<!-- ═══════════════════════════════════
-     MODAL CONFIRM
-═══════════════════════════════════ -->
+<!-- MODAL CONFIRM -->
 <div id="mod-conf" class="ov">
   <div class="mod" style="max-width:400px">
     <h2 id="conf-title">Confirmer</h2>
@@ -825,49 +942,105 @@
 
 <script>
 /* ══════════════════════════════════════════════════════
-   ╔══════════════════════════════════════╗
-   ║  CHANGER LE NOM ICI ↓               ║
-   ╚══════════════════════════════════════╝
-   Changer APP_NAME pour renommer l'app partout.
-   Pour le logo/icône IA, voir la fonction botIconHTML() plus bas.
+   CONFIG
 ══════════════════════════════════════════════════════ */
 const APP_NAME = 'RokyGPT';
-/* ══════════════════════════════════════════════════════
-   MODES
-══════════════════════════════════════════════════════ */
-const MODE_LABELS = { fast: '⚡ Fast', balanced: '⚖️ Balanced', thinking: '🧠 Thinking' };
-let currentMode = localStorage.getItem('rky-mode') || 'fast';
 
+const MODE_LABELS = { fast: '⚡ Fast', balanced: '⚖️ Balanced', thinking: '🧠 Thinking' };
+const MODE_STATUS_POOL = {
+  fast: [
+    'Génération de la réponse…',
+    'Traitement en cours…',
+    'Formulation de la réponse…'
+  ],
+  balanced: [
+    'Analyse de la requête…',
+    'Recherche d\'informations…',
+    'Structuration de la réponse…',
+    'Vérification des données…'
+  ],
+  thinking: [
+    'Réflexion approfondie…',
+    'Analyse multi-angles…',
+    'Vérification de la cohérence…',
+    'Synthèse des éléments…',
+    'Validation des conclusions…',
+    'Affinement des détails…'
+  ]
+};
+
+let currentMode = localStorage.getItem('rky-mode') || 'fast';
+let annualBilling = false;
+
+/* ══════════════════════════════════════════════════════
+   MODE SELECTOR
+══════════════════════════════════════════════════════ */
 function setMode(mode) {
   currentMode = mode;
   localStorage.setItem('rky-mode', mode);
-  document.querySelectorAll('.mode-btn').forEach(b => {
+  // Mettre à jour le bouton pill
+  G('mode-pill-label').textContent = MODE_LABELS[mode];
+  // Mettre à jour les options
+  document.querySelectorAll('.mode-opt').forEach(b => {
     b.classList.toggle('active', b.dataset.mode === mode);
   });
+  // Fermer le dropdown
+  G('mode-dropdown').classList.remove('open');
+  G('mode-pill-btn').classList.remove('open');
 }
-// Applique le mode sauvegardé au chargement
+
+function toggleModeDropdown(e) {
+  e.stopPropagation();
+  const dd = G('mode-dropdown');
+  const btn = G('mode-pill-btn');
+  const isOpen = dd.classList.contains('open');
+  dd.classList.toggle('open', !isOpen);
+  btn.classList.toggle('open', !isOpen);
+}
+
+// Fermer le dropdown si on clique ailleurs
+document.addEventListener('click', () => {
+  G('mode-dropdown').classList.remove('open');
+  G('mode-pill-btn').classList.remove('open');
+});
+
 setTimeout(() => setMode(currentMode), 0);
-/* ── Injection du nom partout ── */
-document.querySelectorAll('[id="app-name-pill"], #auth-app-name').forEach(el => el.textContent = APP_NAME);
-document.title = APP_NAME;
-document.getElementById('disclaimer').textContent = APP_NAME + ' peut faire des erreurs.';
 
 /* ══════════════════════════════════════════════════════
-   LOGO / ICÔNE DU BOT
-   Pour changer le logo :
-   - Option A : remplace le SVG dans botIconHTML() par ton SVG
-   - Option B : remplace par <img src="ton-logo.png"> dans botIconHTML()
+   BILLING TOGGLE
 ══════════════════════════════════════════════════════ */
-function botIconHTML(size=15){
-  /* ← CHANGE TON LOGO ICI */
-  return `<svg viewBox="0 0 41 41" xmlns="http://www.w3.org/2000/svg" fill="black" width="${size}" height="${size}">
-    <path d="M37.532 16.87a9.963 9.963 0 0 0-.856-8.184 10.078 10.078 0 0 0-10.855-4.835A9.964 9.964 0 0 0 18.306.5a10.079 10.079 0 0 0-9.614 6.977 9.967 9.967 0 0 0-6.664 4.834 10.08 10.08 0 0 0 1.24 11.817 9.965 9.965 0 0 0 .856 8.185 10.079 10.079 0 0 0 10.855 4.835 9.965 9.965 0 0 0 7.516 3.35 10.078 10.078 0 0 0 9.617-6.981 9.967 9.967 0 0 0 6.663-4.834 10.079 10.079 0 0 0-1.243-11.813zM22.498 37.886a7.474 7.474 0 0 1-4.799-1.735c.061-.033.168-.091.237-.134l7.964-4.6a1.294 1.294 0 0 0 .655-1.134V19.054l3.366 1.944a.12.12 0 0 1 .066.092v9.299a7.505 7.505 0 0 1-7.49 7.496zM6.392 31.006a7.471 7.471 0 0 1-.894-5.023c.06.036.162.099.237.141l7.964 4.6a1.297 1.297 0 0 0 1.308 0l9.724-5.614v3.888a.12.12 0 0 1-.048.103l-8.051 4.649a7.504 7.504 0 0 1-10.24-2.744zM4.297 13.62A7.469 7.469 0 0 1 8.2 10.333c0 .068-.004.19-.004.274v9.201a1.294 1.294 0 0 0 .654 1.132l9.723 5.614-3.366 1.944a.12.12 0 0 1-.114.012L7.044 23.86a7.504 7.504 0 0 1-2.747-10.24zm27.658 6.437l-9.724-5.615 3.367-1.943a.121.121 0 0 1 .114-.012l8.048 4.648a7.498 7.498 0 0 1-1.158 13.528v-9.476a1.293 1.293 0 0 0-.647-1.13zm3.35-5.043c-.059-.037-.162-.099-.236-.141l-7.965-4.6a1.298 1.298 0 0 0-1.308 0l-9.723 5.614v-3.888a.12.12 0 0 1 .048-.103l8.05-4.645a7.497 7.497 0 0 1 11.135 7.763zm-21.063 6.929l-3.367-1.944a.12.12 0 0 1-.065-.092v-9.299a7.497 7.497 0 0 1 12.293-5.756 6.94 6.94 0 0 0-.236.134l-7.965 4.6a1.294 1.294 0 0 0-.654 1.132l-.006 11.225zm1.829-3.943l4.33-2.501 4.332 2.497v4.998l-4.33 2.5-4.332-2.5V18z"/>
-  </svg>`;
+const PRICES = {
+  monthly: { starter:'2€', pro:'5€', ultra:'15€' },
+  annual:  { starter:'1,60€', pro:'4€', ultra:'12€' }
+};
+const NOTES = {
+  starter: 'soit 19,20€/an',
+  pro: 'soit 48€/an',
+  ultra: 'soit 144€/an'
+};
+
+function toggleBilling() {
+  annualBilling = !annualBilling;
+  G('billing-tog').classList.toggle('on', annualBilling);
+  G('billing-monthly-lbl').classList.toggle('active', !annualBilling);
+  G('billing-annual-lbl').classList.toggle('active', annualBilling);
+  const p = annualBilling ? PRICES.annual : PRICES.monthly;
+  G('price-starter').textContent = p.starter;
+  G('price-pro').textContent = p.pro;
+  G('price-ultra').textContent = p.ultra;
+  ['starter','pro','ultra'].forEach(k => {
+    G('note-'+k).style.visibility = annualBilling ? 'visible' : 'hidden';
+    if(annualBilling) G('note-'+k).textContent = NOTES[k];
+  });
 }
 
 /* ══════════════════════════════════════════════════════
    UTILS
 ══════════════════════════════════════════════════════ */
+document.querySelectorAll('[id="app-name-pill"], #auth-app-name').forEach(el => el.textContent = APP_NAME);
+document.title = APP_NAME;
+document.getElementById('disclaimer').textContent = APP_NAME + ' peut faire des erreurs.';
+
 const G = id => document.getElementById(id);
 
 function toast(msg, ms=2200){
@@ -906,7 +1079,6 @@ document.addEventListener('keydown',e=>{
   if(e.key==='Escape') ['mod-set','mod-sub','mod-conf','mod-chpw'].forEach(id=>G(id)?.classList.remove('open'));
 });
 
-/* Fix clavier mobile */
 if('visualViewport' in window){
   let lastVH=window.visualViewport.height;
   window.visualViewport.addEventListener('resize',()=>{
@@ -914,6 +1086,15 @@ if('visualViewport' in window){
     if(newVH<lastVH-50) setTimeout(()=>{G('chat-cont').scrollTop=G('chat-cont').scrollHeight},100);
     lastVH=newVH;
   });
+}
+
+/* ══════════════════════════════════════════════════════
+   LOGO BOT
+══════════════════════════════════════════════════════ */
+function botIconHTML(size=15){
+  return `<svg viewBox="0 0 41 41" xmlns="http://www.w3.org/2000/svg" fill="black" width="${size}" height="${size}">
+    <path d="M37.532 16.87a9.963 9.963 0 0 0-.856-8.184 10.078 10.078 0 0 0-10.855-4.835A9.964 9.964 0 0 0 18.306.5a10.079 10.079 0 0 0-9.614 6.977 9.967 9.967 0 0 0-6.664 4.834 10.08 10.08 0 0 0 1.24 11.817 9.965 9.965 0 0 0 .856 8.185 10.079 10.079 0 0 0 10.855 4.835 9.965 9.965 0 0 0 7.516 3.35 10.078 10.078 0 0 0 9.617-6.981 9.967 9.967 0 0 0 6.663-4.834 10.079 10.079 0 0 0-1.243-11.813zM22.498 37.886a7.474 7.474 0 0 1-4.799-1.735c.061-.033.168-.091.237-.134l7.964-4.6a1.294 1.294 0 0 0 .655-1.134V19.054l3.366 1.944a.12.12 0 0 1 .066.092v9.299a7.505 7.505 0 0 1-7.49 7.496zM6.392 31.006a7.471 7.471 0 0 1-.894-5.023c.06.036.162.099.237.141l7.964 4.6a1.297 1.297 0 0 0 1.308 0l9.724-5.614v3.888a.12.12 0 0 1-.048.103l-8.051 4.649a7.504 7.504 0 0 1-10.24-2.744zM4.297 13.62A7.469 7.469 0 0 1 8.2 10.333c0 .068-.004.19-.004.274v9.201a1.294 1.294 0 0 0 .654 1.132l9.723 5.614-3.366 1.944a.12.12 0 0 1-.114.012L7.044 23.86a7.504 7.504 0 0 1-2.747-10.24zm27.658 6.437l-9.724-5.615 3.367-1.943a.121.121 0 0 1 .114-.012l8.048 4.648a7.498 7.498 0 0 1-1.158 13.528v-9.476a1.293 1.293 0 0 0-.647-1.13zm3.35-5.043c-.059-.037-.162-.099-.236-.141l-7.965-4.6a1.298 1.298 0 0 0-1.308 0l-9.723 5.614v-3.888a.12.12 0 0 1 .048-.103l8.05-4.645a7.497 7.497 0 0 1 11.135 7.763zm-21.063 6.929l-3.367-1.944a.12.12 0 0 1-.065-.092v-9.299a7.497 7.497 0 0 1 12.293-5.756 6.94 6.94 0 0 0-.236.134l-7.965 4.6a1.294 1.294 0 0 0-.654 1.132l-.006 11.225zm1.829-3.943l4.33-2.501 4.332 2.497v4.998l-4.33 2.5-4.332-2.5V18z"/>
+  </svg>`;
 }
 
 /* ══════════════════════════════════════════════════════
@@ -928,7 +1109,7 @@ function toggleTheme(){isLight=!isLight;localStorage.setItem('rky-theme',isLight
 applyTheme();
 
 /* ══════════════════════════════════════════════════════
-   COULEUR D'ACCENTUATION
+   COULEUR ACCENT
 ══════════════════════════════════════════════════════ */
 function hexToRgb(hex){
   const r=parseInt(hex.slice(1,3),16), g=parseInt(hex.slice(3,5),16), b=parseInt(hex.slice(5,7),16);
@@ -940,9 +1121,7 @@ function setAccent(hex, rgb){
   document.documentElement.style.setProperty('--acc-rgb', rgb);
   localStorage.setItem('rky-acc', hex);
   localStorage.setItem('rky-acc-rgb', rgb);
-  // Mettre à jour l'avatar couleur
   document.querySelectorAll('.uav').forEach(el=>el.style.background=hex);
-  // Marquer le swatch actif
   document.querySelectorAll('.swatch').forEach(s=>s.classList.toggle('active', s.dataset.color===hex));
   G('acc-custom-pick').value=hex;
 }
@@ -954,12 +1133,10 @@ function setUbub(color){
   localStorage.setItem('rky-ubub', color);
   document.querySelectorAll('#ubub-swatches .swatch').forEach(s=>s.classList.toggle('active', s.dataset.ubub===color));
 }
-// Init accent
 const savedAcc=localStorage.getItem('rky-acc'), savedAccRgb=localStorage.getItem('rky-acc-rgb');
 if(savedAcc) setAccent(savedAcc, savedAccRgb||hexToRgb(savedAcc));
 const savedUbub=localStorage.getItem('rky-ubub');
 if(savedUbub) setUbub(savedUbub);
-// Marquer swatches actifs au chargement
 setTimeout(()=>{
   const cur=localStorage.getItem('rky-acc')||'#10a37f';
   document.querySelectorAll('#acc-swatches .swatch').forEach(s=>s.classList.toggle('active', s.dataset.color===cur));
@@ -979,10 +1156,8 @@ function updateUserUI(){
   G('sb-av').textContent=n[0].toUpperCase();
   G('sb-un').textContent=n;
   if(G('set-user')) G('set-user').textContent=curUser||(APP_NAME+' Invité');
-  // Afficher les bonnes actions selon état connexion
   if(G('set-logged-actions')) G('set-logged-actions').style.display=curUser?'':'none';
   if(G('set-guest-actions')) G('set-guest-actions').style.display=curUser?'none':'';
-  // couleur avatar
   const acc=localStorage.getItem('rky-acc')||'#10a37f';
   document.querySelectorAll('.uav').forEach(el=>el.style.background=acc);
 }
@@ -1024,7 +1199,6 @@ function doLogin(){
 function startSession(n){curUser=n;localStorage.setItem('rky-session',n);updateUserUI()}
 function doLogout(){curUser=null;localStorage.removeItem('rky-session');updateUserUI();closeSettings();toast('Déconnecté')}
 function closeAuth(){G('mod-auth').classList.remove('open')}
-
 function openChangePass(){closeSettings();G('pw-err').classList.remove('on');G('pw-suc').classList.remove('on');G('mod-chpw').classList.add('open')}
 function doChangePass(){
   if(!curUser){toast('Non connecté');return}
@@ -1038,19 +1212,18 @@ function doChangePass(){
   G('pw-suc').textContent='Mot de passe changé !';G('pw-suc').classList.add('on');G('pw-err').classList.remove('on');
   setTimeout(()=>G('mod-chpw').classList.remove('open'),1500);
 }
-
 G('l-user').addEventListener('keydown',e=>{if(e.key==='Enter')G('l-pass').focus()});
 G('l-pass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin()});
 G('r-conf').addEventListener('keydown',e=>{if(e.key==='Enter')doRegister()});
 
 /* ══════════════════════════════════════════════════════
-   SIDEBAR — collapse desktop / tiroir mobile
+   SIDEBAR
 ══════════════════════════════════════════════════════ */
 let sbCollapsed=localStorage.getItem('rky-sb-collapsed')==='1';
 const isMobile=()=>window.innerWidth<=768;
 
 function applyCollapse(){
-  if(isMobile()) return; // sur mobile on utilise le tiroir
+  if(isMobile()) return;
   G('sidebar').classList.toggle('collapsed',sbCollapsed);
 }
 function toggleSidebar(){
@@ -1060,14 +1233,9 @@ function toggleSidebar(){
   applyCollapse();
 }
 applyCollapse();
-
 function openSB(){G('sidebar').classList.add('open');G('sb-ov').classList.add('on')}
 function closeSB(){G('sidebar').classList.remove('open');G('sb-ov').classList.remove('on')}
-
-// Afficher/cacher le bouton burger mobile
-function checkMobileMenu(){
-  G('mob-menu-btn').style.display=isMobile()?'flex':'none';
-}
+function checkMobileMenu(){G('mob-menu-btn').style.display=isMobile()?'flex':'none'}
 checkMobileMenu();
 window.addEventListener('resize',()=>{checkMobileMenu();applyCollapse()});
 
@@ -1087,12 +1255,10 @@ function filterConvs(q){
 }
 
 /* ══════════════════════════════════════════════════════
-   SETTINGS — onglets
+   SETTINGS
 ══════════════════════════════════════════════════════ */
 function showPTab(name){
-  ['perso','compte','memoire','outils'].forEach(t=>{
-    G('ptab-'+t).style.display=t===name?'':'none';
-  });
+  ['perso','compte','memoire','outils'].forEach(t=>{G('ptab-'+t).style.display=t===name?'':'none'});
   document.querySelectorAll('.ptab').forEach((btn,i)=>{
     const names=['perso','compte','memoire','outils'];
     btn.classList.toggle('on',names[i]===name);
@@ -1103,7 +1269,7 @@ function openSettings(){updateUserUI();showPTab('perso');G('mod-set').classList.
 function closeSettings(){G('mod-set').classList.remove('open')}
 function openSub(){G('mod-sub').classList.add('open')}
 function closeSub(){G('mod-sub').classList.remove('open')}
-function goStripe(plan){toast('Redirection Stripe ('+plan+') — à configurer');closeSub()}
+function goStripe(plan){toast('Redirection Stripe ('+plan+(annualBilling?' annuel':' mensuel')+') — à configurer');closeSub()}
 
 /* ══════════════════════════════════════════════════════
    MÉMOIRE
@@ -1166,12 +1332,11 @@ function loadConv(id){
   if(!c.messages.length){chat.style.display='none';wel.style.display='flex'}
   else{
     chat.style.display='flex';wel.style.display='none';
-    c.messages.forEach((m,i)=>renderMsg(m.content,m.role==='user'?'user':'bot',[],i,m.tool||null,m.interactiveHtml||null));
+    c.messages.forEach((m,i)=>renderMsg(m.content,m.role==='user'?'user':'bot',[],i,m.tool||null,m.interactiveHtml||null,m.mode||null));
   }
   setTimeout(()=>{G('chat-cont').scrollTop=G('chat-cont').scrollHeight},50);
 }
 
-/* Injecte les mémoires dans le system prompt côté client via le champ userId (le serveur gère) */
 async function doSync(){
   if(synced||!convs[curId]?.messages?.length) return;
   const memories=getMemories();
@@ -1212,14 +1377,58 @@ function autoTitle(text){
 }
 
 /* ══════════════════════════════════════════════════════
-   INTERACTIVE WIDGET — iframe sans limite de hauteur
+   VALIDATION DATE — vérifie que la réponse est récente
+══════════════════════════════════════════════════════ */
+function getTodayStrings() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth(); // 0-based
+  const day = now.getDate();
+  const MONTHS_FR = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+  const MONTHS_EN = ['january','february','march','april','may','june','july','august','september','october','november','december'];
+  return {
+    year,
+    yearStr: String(year),
+    monthFR: MONTHS_FR[month],
+    monthEN: MONTHS_EN[month],
+    dayStr: String(day),
+    iso: `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`
+  };
+}
+
+function responseNeedsDateCheck(reply) {
+  // Vérifie si la réponse contient des mentions de dates ou d'actualités
+  const triggers = [
+    /\b(aujourd'hui|today|actuellement|currently|en ce moment|right now|cette semaine|this week|ce mois|this month)\b/i,
+    /\b(dernièr|latest|récent|recent|nouveau|new|vient de|just|breaking)\b/i,
+    /\b(20\d\d)\b/, // any year 2000-2099
+    /\b(lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche|monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b/i
+  ];
+  return triggers.some(r => r.test(reply));
+}
+
+function isDateConsistent(reply) {
+  const td = getTodayStrings();
+  // Si la réponse mentionne une année différente de cette année ou l'année précédente, c'est suspect
+  const yearMatches = reply.match(/\b(20\d\d)\b/g);
+  if (yearMatches) {
+    const hasWrongYear = yearMatches.some(y => {
+      const n = parseInt(y);
+      return n < td.year - 1 || n > td.year + 1;
+    });
+    if (hasWrongYear) return false;
+  }
+  return true;
+}
+
+/* ══════════════════════════════════════════════════════
+   INTERACTIVE WIDGET
 ══════════════════════════════════════════════════════ */
 const TOOL_ICONS={Date:'📅',Calcul:'🧮',CodeJS:'⚙️',Mermaid:'📊',Search:'🔍',Interactive:'✨'};
 const TOOL_LABELS={Date:'Date & Heure',Calcul:'Calcul',CodeJS:'Code JS',Mermaid:'Diagramme',Search:'Recherche Web',Interactive:'Composant Interactif'};
 
 function createInteractiveWidget(html, container){
   const wrap=document.createElement('div'); wrap.className='interactive-wrap';
-
   const header=document.createElement('div'); header.className='interactive-header';
   header.innerHTML=`
     <div class="interactive-header-left"><span>✨</span><span>Composant interactif</span></div>
@@ -1228,70 +1437,36 @@ function createInteractiveWidget(html, container){
       <button class="int-btn" data-action="code">⎘ Code</button>
     </div>`;
   wrap.appendChild(header);
-
   const iframe=document.createElement('iframe');
   iframe.className='interactive-iframe';
   iframe.setAttribute('sandbox','allow-scripts allow-same-origin allow-forms allow-popups');
   iframe.setAttribute('title','Composant interactif');
-  /* Hauteur de départ raisonnable, sera ajustée par postMessage */
   iframe.style.height='300px';
 
-  /* Injecte script d'auto-resize SANS max-height — l'iframe grandit librement */
-const htmlWithResize=html.replace('</body>',`
+  const htmlWithResize=html.replace('</body>',`
 <script>
-  // Fixe overflow hidden pour éviter la rétroaction
   document.documentElement.style.overflow = 'hidden';
   document.body.style.overflow = 'hidden';
-
-  let lastSent = 0;
-  let stable = 0;
-  let ro = null;
-
+  let lastSent = 0, stable = 0, ro = null;
   function sendHeight(){
-    // On mesure le contenu réel, pas scrollHeight (qui inclut l'espace de l'iframe)
-    const els = document.body.children;
-    let maxBottom = 0;
-    for(let i = 0; i < els.length; i++){
-      const r = els[i].getBoundingClientRect();
-      if(r.bottom > maxBottom) maxBottom = r.bottom;
-    }
-    // fallback si pas d'enfants
+    const els = document.body.children; let maxBottom = 0;
+    for(let i = 0; i < els.length; i++){const r = els[i].getBoundingClientRect();if(r.bottom > maxBottom) maxBottom = r.bottom;}
     const h = Math.max(maxBottom, document.body.offsetHeight, 50);
     const rounded = Math.ceil(h);
-    if(rounded === lastSent) return; // rien de changé → on n'envoie pas
+    if(rounded === lastSent) return;
     lastSent = rounded;
     window.parent.postMessage({type:'rky-resize',height:rounded},'*');
   }
-
   function startObserving(){
     if(ro) ro.disconnect();
-    ro = new ResizeObserver(()=>{
-      // Debounce : on attend que la taille soit stable 2 fois de suite
-      clearTimeout(stable);
-      stable = setTimeout(sendHeight, 50);
-    });
-    // Observer chaque enfant direct du body, pas le body lui-même
-    // (évite la rétroaction body → iframe → body)
+    ro = new ResizeObserver(()=>{clearTimeout(stable);stable = setTimeout(sendHeight, 50);});
     Array.from(document.body.children).forEach(el => ro.observe(el));
   }
-
-  window.addEventListener('load', ()=>{
-    startObserving();
-    sendHeight();
-    // Quelques vérifications tardives pour les libs async (Chart.js, D3…)
-    [200, 500, 1000, 2000].forEach(ms => setTimeout(sendHeight, ms));
-  });
-
-  // Si du contenu est ajouté dynamiquement, re-observer
-  new MutationObserver(()=>{
-    startObserving();
-    clearTimeout(stable);
-    stable = setTimeout(sendHeight, 50);
-  }).observe(document.body, {childList:true});
+  window.addEventListener('load', ()=>{startObserving();sendHeight();[200,500,1000,2000].forEach(ms => setTimeout(sendHeight, ms));});
+  new MutationObserver(()=>{startObserving();clearTimeout(stable);stable = setTimeout(sendHeight, 50);}).observe(document.body, {childList:true});
 <\/script>
 </body>`);
 
-  /* Écoute les messages de hauteur — PAS de plafond, l'iframe prend la place qu'il faut */
   const resizeHandler=(event)=>{
     if(event.data?.type==='rky-resize' && event.source===iframe.contentWindow){
       const h=Math.max(event.data.height+4, 100);
@@ -1299,15 +1474,12 @@ const htmlWithResize=html.replace('</body>',`
     }
   };
   window.addEventListener('message',resizeHandler);
-
   iframe.srcdoc=htmlWithResize;
   wrap.appendChild(iframe);
-
   header.querySelector('[data-action="fullscreen"]').addEventListener('click',()=>{
     const w=window.open('','_blank'); if(w){w.document.write(html);w.document.close()}
   });
   header.querySelector('[data-action="code"]').addEventListener('click',()=>{copyText(html);toast('Code HTML copié !')});
-
   container.appendChild(wrap);
   return wrap;
 }
@@ -1328,15 +1500,12 @@ function renderMsg(text, type, files=[], index=-1, usedTool=null, interactiveHtm
       fd.textContent=files.map(f=>'📎 '+(f.name||f)).join(' · ');
       bub.appendChild(fd);
     }
-    /* Bouton édition */
     const editBtn=document.createElement('button'); editBtn.className='user-edit-btn'; editBtn.textContent='✏️ Modifier';
     editBtn.addEventListener('click',()=>startEdit(g, text, index));
     bub.appendChild(editBtn);
-
     const ma=document.createElement('div'); ma.className='ma';
     const cp=makeBtn('Copier',cpSVG()); cp.addEventListener('click',()=>copyText(text)); ma.appendChild(cp);
     g.appendChild(bub); g.appendChild(ma);
-
   } else {
     const bh=document.createElement('div'); bh.className='bh';
     const bico=document.createElement('div'); bico.className='bico'; bico.innerHTML=botIconHTML(15);
@@ -1356,7 +1525,6 @@ function renderMsg(text, type, files=[], index=-1, usedTool=null, interactiveHtm
     const bub=document.createElement('div'); bub.className='bub';
     if(text?.trim()) renderBubble(bub,text);
     if(interactiveHtml) createInteractiveWidget(interactiveHtml,bub);
-
     const ma=document.createElement('div'); ma.className='ma';
     const cp=makeBtn('Copier',cpSVG()); cp.addEventListener('click',()=>copyText(text)); ma.appendChild(cp);
     if(index>=0){
@@ -1372,11 +1540,7 @@ function renderMsg(text, type, files=[], index=-1, usedTool=null, interactiveHtm
 
 function cpSVG(){return`<svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`}
 function rgSVG(){return`<svg viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.67"/></svg>`}
-
-function makeBtn(title,svg){
-  const b=document.createElement('button'); b.className='mab'; b.title=title;
-  b.innerHTML=svg; return b;
-}
+function makeBtn(title,svg){const b=document.createElement('button');b.className='mab';b.title=title;b.innerHTML=svg;return b}
 
 function renderBubble(bub,text){
   const parts=text.split(/(```[\s\S]*?```)/g);
@@ -1427,20 +1591,17 @@ function addMsg(text,type,files=[],usedTool=null,interactiveHtml=null,mode=null)
 }
 
 /* ══════════════════════════════════════════════════════
-   ÉDITION DE MESSAGE UTILISATEUR
+   ÉDITION MESSAGE
 ══════════════════════════════════════════════════════ */
 function startEdit(msgEl, originalText, index){
   const bub=msgEl.querySelector('.bub');
   const orig=bub.innerHTML;
-
-  // Remplace la bulle par une textarea
   bub.innerHTML='';
   const ta=document.createElement('textarea'); ta.className='edit-area';
   ta.value=originalText; bub.appendChild(ta);
   ta.style.height=Math.min(ta.scrollHeight,200)+'px';
   ta.addEventListener('input',()=>{ta.style.height='auto';ta.style.height=Math.min(ta.scrollHeight,200)+'px'});
   ta.focus();
-
   const actions=document.createElement('div'); actions.className='edit-actions';
   const okBtn=document.createElement('button'); okBtn.className='edit-ok'; okBtn.textContent='Envoyer';
   const cancelBtn=document.createElement('button'); cancelBtn.className='edit-cancel'; cancelBtn.textContent='Annuler';
@@ -1448,14 +1609,11 @@ function startEdit(msgEl, originalText, index){
   okBtn.addEventListener('click',async()=>{
     const newText=ta.value.trim();
     if(!newText){toast('Message vide');return}
-    // Tronque l'historique à partir de ce message
     const c=convs[curId];
     c.messages.splice(index);
-    // Retire tous les messages DOM à partir de index
     const allMsgs=G('chat').querySelectorAll('.mg');
     for(let j=index;j<allMsgs.length;j++) allMsgs[j].remove();
     save();
-    // Renvoie le message modifié
     await doSync();
     addMsg(newText,'user',[]);
     autoTitle(newText);
@@ -1466,44 +1624,112 @@ function startEdit(msgEl, originalText, index){
 }
 
 /* ══════════════════════════════════════════════════════
-   THINKING
+   THINKING — avec animation de statut
 ══════════════════════════════════════════════════════ */
 let thinkEl=null;
+let statusInterval=null;
+let statusIndex=0;
+
+function getStatusMessages() {
+  return MODE_STATUS_POOL[currentMode] || MODE_STATUS_POOL.fast;
+}
+
 function showThink(label=''){
   const chat=G('chat');
   thinkEl=document.createElement('div'); thinkEl.className='mg bot';
   const bh=document.createElement('div'); bh.className='bh';
   const bico=document.createElement('div'); bico.className='bico'; bico.innerHTML=botIconHTML(15);
   const blbl=document.createElement('span'); blbl.className='blbl'; blbl.textContent=APP_NAME;
-  if(label){const badge=document.createElement('span');badge.className='tool-badge';badge.textContent=label;blbl.appendChild(badge)}
+  if(label){
+    const badge=document.createElement('span');badge.className='tool-badge';badge.textContent=label;blbl.appendChild(badge);
+  }
   bh.appendChild(bico); bh.appendChild(blbl);
+
+  // Statut animé avec dégradé
+  const statusEl=document.createElement('div'); statusEl.className='think-status';
+  const msgs = getStatusMessages();
+  statusEl.textContent = msgs[0];
+
   const dots=document.createElement('div'); dots.className='tdots';
   dots.innerHTML='<span></span><span></span><span></span>';
-  if(label){const rl=document.createElement('div');rl.className='retry-lbl';rl.textContent=label;thinkEl.appendChild(bh);thinkEl.appendChild(rl);thinkEl.appendChild(dots)}
-  else{thinkEl.appendChild(bh);thinkEl.appendChild(dots)}
+
+  thinkEl.appendChild(bh);
+  thinkEl.appendChild(statusEl);
+  thinkEl.appendChild(dots);
+
   chat.appendChild(thinkEl);
   G('chat-cont').scrollTop=G('chat-cont').scrollHeight;
+
+  // Rotation des messages de statut
+  statusIndex = 0;
+  clearInterval(statusInterval);
+  const interval = currentMode === 'thinking' ? 2200 : currentMode === 'balanced' ? 2800 : 3500;
+  statusInterval = setInterval(()=>{
+    statusIndex = (statusIndex + 1) % msgs.length;
+    if(statusEl && statusEl.parentNode) {
+      statusEl.style.opacity='0';
+      setTimeout(()=>{
+        if(statusEl && statusEl.parentNode) {
+          statusEl.textContent = msgs[statusIndex];
+          statusEl.style.opacity='1';
+        }
+      }, 300);
+    } else {
+      clearInterval(statusInterval);
+    }
+  }, interval);
+
+  // Style de transition pour le texte
+  statusEl.style.transition = 'opacity 0.3s ease';
 }
-function hideThink(){if(thinkEl){thinkEl.remove();thinkEl=null}}
+
+function hideThink(){
+  clearInterval(statusInterval);
+  statusInterval=null;
+  if(thinkEl){thinkEl.remove();thinkEl=null}
+}
+
 function updateThinkLabel(label){
   const rl=thinkEl?.querySelector('.retry-lbl');
   if(rl) rl.textContent=label;
-  else if(thinkEl){const el=document.createElement('div');el.className='retry-lbl';el.textContent=label;thinkEl.appendChild(el)}
+  else if(thinkEl){
+    const el=document.createElement('div');el.className='retry-lbl';el.textContent=label;
+    thinkEl.appendChild(el);
+  }
 }
 
 /* ══════════════════════════════════════════════════════
-   RETRY AUTOMATIQUE — jusqu'à 5 tentatives
+   RETRY avec vérification de date — 5 tentatives max
 ══════════════════════════════════════════════════════ */
 async function fetchWithRetry(fd, maxRetries=5){
   for(let attempt=1; attempt<=maxRetries; attempt++){
     try{
       if(attempt>1) updateThinkLabel(`Tentative ${attempt}/${maxRetries}…`);
       const r=await fetch('/chat',{method:'POST',body:fd});
-      if(r.ok) return await r.json();
-      // Erreur 4xx/5xx — on retente sauf 401/403 (auth)
-      if(r.status===401||r.status===403) throw new Error('Auth error '+r.status);
-      if(attempt===maxRetries) throw new Error('HTTP '+r.status+' après '+maxRetries+' tentatives');
-      await new Promise(res=>setTimeout(res, 800*attempt)); // backoff
+      if(!r.ok){
+        if(r.status===401||r.status===403) throw new Error('Auth error '+r.status);
+        if(attempt===maxRetries) throw new Error('HTTP '+r.status+' après '+maxRetries+' tentatives');
+        await new Promise(res=>setTimeout(res, 800*attempt));
+        continue;
+      }
+      const d = await r.json();
+      const reply = d.reply || '';
+
+      // Vérification de cohérence de date
+      if(responseNeedsDateCheck(reply) && !isDateConsistent(reply)){
+        if(attempt < maxRetries){
+          const td = getTodayStrings();
+          updateThinkLabel(`Vérification des données (${attempt}/${maxRetries})…`);
+          // Ajouter contexte de date à la requête suivante
+          const newFd = new FormData();
+          for(const [k,v] of fd.entries()) newFd.append(k,v);
+          newFd.set('date_hint', `Nous sommes le ${td.dayStr} ${td.monthFR} ${td.year}. Assure-toi que ta réponse est cohérente avec cette date.`);
+          fd = newFd;
+          await new Promise(res=>setTimeout(res, 600));
+          continue;
+        }
+      }
+      return d;
     } catch(e){
       if(attempt===maxRetries) throw e;
       if(e.message.startsWith('Auth')) throw e;
@@ -1524,9 +1750,10 @@ async function regen(idx){
   if(bots.length) bots[bots.length-1].remove();
   showThink(); await doSync();
   const fd=new FormData(); fd.append('message',lastUser); fd.append('userId',curId);
+  fd.append('mode',currentMode);
   try{
     const d=await fetchWithRetry(fd);
-    hideThink(); addMsg(d.reply||'Pas de réponse…','bot',[],d.tool||null,d.interactiveHtml||null);
+    hideThink(); addMsg(d.reply||'Pas de réponse…','bot',[],d.tool||null,d.interactiveHtml||null,currentMode);
   }catch(e){hideThink();addMsg('❌ Échec après plusieurs tentatives. Vérifie ta connexion.','bot')}
 }
 
@@ -1557,10 +1784,9 @@ function fill(text){tin.value=text;tin.dispatchEvent(new Event('input'));tin.foc
 async function sendToAPI(msg, files){
   showThink(); snd.disabled=true;
   const fd=new FormData();
-  fd.append('message',msg); 
+  fd.append('message',msg);
   fd.append('userId',curId);
-  fd.append('mode', currentMode);
-  // Injecte les mémoires dans le form
+  fd.append('mode',currentMode);
   const memories=getMemories();
   if(memories.length) fd.append('memories',JSON.stringify(memories));
   files.forEach(f=>fd.append('files',f));
